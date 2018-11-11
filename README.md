@@ -2,7 +2,7 @@
 A simple banner generator for spigot resources and authors<br>
 ![alt text](https://banners.plajer.xyz/status/status.png)
 
-#Usage
+# Usage
 <strong>Resource</strong>
 https://banners.plajer.xyz/resource/<resourceID>/banner.png<br>
 <i>Example: https://banners.plajer.xyz/resource/9661/banner.png</i><br>
