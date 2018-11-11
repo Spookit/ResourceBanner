@@ -144,6 +144,7 @@ public class BannerMaker extends WebServer {
 		Header header = new Header();
 		REQUESTS++;
 		past = System.currentTimeMillis();
+		
 		header.fields.put(HttpField.CacheControl, "private, no-store, no-cache, must-revalidate");
 		header.fields.put(HttpField.Pragma, "no-cache");
 		header.fields.put(HttpField.Date, new Date());
