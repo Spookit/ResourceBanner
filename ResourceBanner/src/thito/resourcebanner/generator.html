@@ -1,0 +1,215 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Resource Banner</title>
+	</head>
+	<body>
+	
+				<datalist id="font">
+					<option value="Arial">Arial</option>
+					<option value="Edo">Edo</option>
+					<option value="Action Man">Action Man</option>
+					<option value="Action Man Extended">Action Man Extended</option>
+					<option value="Amadeus">Amadeus</option>
+					<option value="Architects Daughter">Architects Daughter</option>
+					<option value="BloggerSans">BloggerSans</option>
+					<option value="BreeSerif-Regular">BreeSerif-Regular</option>
+					<option value="Comfortaa">Comfortaa</option>
+					<option value="Distant Galaxy">Distant Galaxy</option>
+					<option value="Eraser Regular">Eraser Regular</option>
+					<option value="FORQUE">FORQUE</option>
+					<option value="LobsterTwo">LobsterTwo</option>
+					<option value="Minotaur Phatte">Minotaur Phatte</option>
+					<option value="Permanent Marker">Permanent Marker</option>
+					<option value="Pincoyablack-Black">Pincoyablack-Black</option>
+					<option value="Rock Salt">Rock Salt</option>
+				</datalist>
+				
+				
+		<h1>Resource Banner Generator</h1>
+		<h2><i>Created by BlueObsidian</i></h2><br>
+		<form>
+			<fieldset id="reso_field">
+				<h3>RESOURCE BADGE</h3>
+				<p>Your Resource ID *</p>
+				<input type="text" id="reso_id"/><br><br>
+				<p>Brightness Style</p>
+				<input type="radio" id="reso_br_def" name="reso_br_field" checked=true>Random<br>
+				<input type="radio" id="reso_br_true" name="reso_br_field">Cream Color<br>
+				<input type="radio" id="reso_br_false" name="reso_br_field">Chocolate Color<br><br>
+				<p>Width : 
+				<input type="number" id="reso_width" max="1200" min="0" onkeyup="if(this.value > this.max) this.value = this.max;" onkeydown="if(this.value < this.min) this.value=this.min;"/><br><br>
+				<p>Background Color : 
+				<input type="color" id="reso_color" hidden=true><input type="checkbox" checked=true id="reso_random" onclick="document.getElementById('reso_color').hidden = checked">Randomize<br><br>
+				<p>Font : </p>
+				<input type="text" id="reso_font" list="font"/><br><br>
+				<p>SubFont : </p>
+				<input type="text" id="reso_subfont" list="font"/><br><br>
+				<p>Image Format</p>
+				<select id="reso_format" list="format">
+					<option value="png">Portable Network Graphics (Recommended)</option>
+					<option value="jpg">Joint Photographic Experts Group (Bad Quality)</option>
+				</select><br><br><br>
+				<h6>* important</h6>
+				<button type="button" onclick="generateReso();">Generate</button>
+				<button type="button" onclick="copyText('linkreso');">Copy</button><br>
+				<textarea rows="3" cols="100" id="linkreso" disabled=true></textarea><br><br>
+				<iframe id="reso_frame" width="100%" height="300"></iframe>
+			</fieldset>
+			<fieldset id="au_field">
+				<h3>RESOURCE LIST BADGE</h3>
+				<p>Your Author ID *</p>
+				<input type="text" id="au_id"/><br><br>
+				<p>Brightness Style</p>
+				<input type="radio" id="au_br_def" name="au_br_field" checked=true>Random<br>
+				<input type="radio" id="au_br_true" name="au_br_field">Cream Color<br>
+				<input type="radio" id="au_br_false" name="au_br_field">Chocolate Color<br><br>
+				<p>Width : 
+				<input type="number" id="au_width" max="1200" min="0" onkeyup="if(this.value > this.max) this.value = this.max;" onkeydown="if(this.value < this.min) this.value=this.min;"/><br><br>
+				<p>Size :
+				<input type="number" id="au_size" max="50" min="0" onkeyup="if(this.value > this.max) this.value = this.max;" onkeydown="if(this.value < this.min) this.value=this.min;"/><br><br>
+				<p>Background Color : 
+				<input type="color" id="au_color" hidden=true><input type="checkbox" checked=true id="au_random" onclick="document.getElementById('au_color').hidden = checked">Randomize<br><br>
+				<p>Font : </p>
+				<input type="text" id="au_font" list="font"/><br><br>
+				<p>SubFont : </p>
+				<input type="text" id="au_subfont" list="font"/><br><br>
+				<p>Image Format</p>
+				<select id="au_format" list="format">
+					<option value="png">Portable Network Graphics (Recommended)</option>
+					<option value="jpg">Joint Photographic Experts Group (Bad Quality)</option>
+				</select><br><br><br>
+				<h6>* important</h6>
+				<button type="button" onclick="generateAuthor();">Generate</button>
+				<button type="button" onclick="copyText('linkau');">Copy</button><br>
+				<textarea rows="3" cols="100" id="linkau" disabled=true></textarea><br><br>
+				<iframe id="au_frame" width="100%" height="300"></iframe>
+			</fieldset>
+			<p>Sorry for this UGLY website :P</p>
+		<script>
+			function generateAuthor() {
+				var target = document.getElementById("linkau");
+				var val = document.getElementById("au_id").value;
+				if (val == null || val == "") {
+					target.value = "Invalid author ID";
+					return;
+				}
+				var baseURL = "https://banners.plajer.xyz/author/"+val+"/banner."+document.getElementById("au_format").value;
+				var hasInited = false;
+				if (document.getElementById("au_br_true").checked) {
+					baseURL = baseURL+"?bright=true";
+					hasInited = true;
+				} else if (document.getElementById("au_br_false").checked) {
+					baseURL = baseURL+"?bright=false";
+					hasInited = true;
+				}
+				if (document.getElementById("au_width").value.toString() && document.getElementById("au_width").value.toString() > 0) {
+					if (hasInited) {
+						baseURL = baseURL+"&width="+document.getElementById("au_width").value;
+					} else {
+						baseURL = baseURL+"?width="+document.getElementById("au_width").value;
+						hasInited = true;
+					}
+				}
+				if (document.getElementById("au_size").value.toString() && document.getElementById("au_size").value.toString() > 0) {
+					if (hasInited) {
+						baseURL = baseURL+"&size="+document.getElementById("au_size").value;
+					} else {
+						baseURL = baseURL+"?size="+document.getElementById("au_size").value;
+						hasInited = true;
+					}
+				}
+				if (!document.getElementById("au_random").checked) {
+					if (hasInited) {
+						baseURL = baseURL+"&color="+document.getElementById("au_color").value.toString().substring(1,7);
+					} else {
+						baseURL = baseURL+"?color="+document.getElementById("au_color").value.toString().substring(1,7);
+						hasInited = true;
+					}
+				}
+				if (document.getElementById("au_font").value.toString()) {
+					if (hasInited) {
+						baseURL = baseURL+"&font="+document.getElementById("au_font").value;
+					} else {
+						baseURL = baseURL+"?font="+document.getElementById("au_font").value;
+						hasInited = true;
+					}
+				}
+				if (document.getElementById("au_subfont").value.toString()) {
+					if (hasInited) {
+						baseURL = baseURL+"&subfont="+document.getElementById("au_subfont").value;
+					} else {
+						baseURL = baseURL+"?subfont="+document.getElementById("au_subfont").value;
+						hasInited = true;
+					}
+				}
+				target.value = baseURL;
+				document.getElementById("au_frame").src = baseURL;
+			}
+			function copyText(e) {
+				e = document.getElementById(e);
+				e.disabled=false;
+				e.select();
+				document.execCommand('copy');
+				e.disabled=true;
+				var old = e.value;
+				e.value = "COPIED!"
+				setTimeout(function(){
+					e.value = old;
+				}, 500); 
+			}
+			function generateReso() {
+				var target = document.getElementById("linkreso");
+				var val = document.getElementById("reso_id").value;
+				if (val == null || val == "") {
+					target.value = "Invalid Resource ID";
+					return;
+				}
+				var baseURL = "https://banners.plajer.xyz/resource/"+val+"/banner."+document.getElementById("reso_format").value;
+				var hasInited = false;
+				if (document.getElementById("reso_br_true").checked) {
+					baseURL = baseURL+"?bright=true";
+					hasInited = true;
+				} else if (document.getElementById("reso_br_false").checked) {
+					baseURL = baseURL+"?bright=false";
+					hasInited = true;
+				}
+				if (document.getElementById("reso_width").value.toString() && document.getElementById("reso_width").value.toString() > 0) {
+					if (hasInited) {
+						baseURL = baseURL+"&width="+document.getElementById("reso_width").value;
+					} else {
+						baseURL = baseURL+"?width="+document.getElementById("reso_width").value;
+						hasInited = true;
+					}
+				}
+				if (!document.getElementById("reso_random").checked) {
+					if (hasInited) {
+						baseURL = baseURL+"&color="+document.getElementById("reso_color").value.toString().substring(1,7);
+					} else {
+						baseURL = baseURL+"?color="+document.getElementById("reso_color").value.toString().substring(1,7);
+						hasInited = true;
+					}
+				}
+				if (document.getElementById("reso_font").value.toString()) {
+					if (hasInited) {
+						baseURL = baseURL+"&font="+document.getElementById("reso_font").value;
+					} else {
+						baseURL = baseURL+"?font="+document.getElementById("reso_font").value;
+						hasInited = true;
+					}
+				}
+				if (document.getElementById("reso_subfont").value.toString()) {
+					if (hasInited) {
+						baseURL = baseURL+"&subfont="+document.getElementById("reso_subfont").value;
+					} else {
+						baseURL = baseURL+"?subfont="+document.getElementById("reso_subfont").value;
+						hasInited = true;
+					}
+				}
+				target.value = baseURL;
+
+				document.getElementById("reso_frame").src = baseURL;
+			}
+		</script>
+	</body>
+</html>
