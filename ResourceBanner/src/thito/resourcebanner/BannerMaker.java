@@ -139,6 +139,8 @@ public class BannerMaker extends WebServer {
 	public static final String defaultFont = "?";
 	public static String[] supportedTypes = {"png","jpg","jpeg"};
 	public static int defaultType = 0;
+	
+	
 	@Override
 	public void handle(OutputStream out, BufferedReader reader, Socket socket, String[] path,Properties props) throws Throwable {
 		Header header = new Header();
