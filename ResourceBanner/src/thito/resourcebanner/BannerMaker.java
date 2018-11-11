@@ -17,6 +17,7 @@ import java.lang.management.RuntimeMXBean;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -138,12 +139,17 @@ public class BannerMaker extends WebServer {
 	public static final String defaultFont = "?";
 	public static String[] supportedTypes = {"png","jpg","jpeg"};
 	public static int defaultType = 0;
+	
+	
 	@Override
 	public void handle(OutputStream out, BufferedReader reader, Socket socket, String[] path,Properties props) throws Throwable {
 		Header header = new Header();
 		REQUESTS++;
 		past = System.currentTimeMillis();
-		
+		header.fields.put(HttpField.CacheControl, "private, no-store, no-cache, must-revalidate");
+		header.fields.put(HttpField.Pragma, "no-cache");
+		header.fields.put(HttpField.Date, new Date());
+		header.fields.put(HttpField.Expires, new Date());
 		String fontName = defaultFont;
 		String subFont = null;
 		if (props.containsKey("font")) {
