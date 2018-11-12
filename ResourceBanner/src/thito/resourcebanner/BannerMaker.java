@@ -248,7 +248,7 @@ public class BannerMaker extends WebServer {
     	 * Host record
     	 */
     	InetAddress address = socket.getInetAddress();
-    	String host = address.getCanonicalHostName();
+    	String host = props.getProperty("referer",props.getProperty("host", address.getHostName()));
     	LATEST_HOSTS.remove(host);
     	LATEST_HOSTS.add(host);
     	/*
