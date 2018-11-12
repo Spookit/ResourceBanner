@@ -4,12 +4,12 @@ A simple banner generator for spigot resources and authors<br>
 
 # Usage
 <strong>Resource</strong>
-https://banners.plajer.xyz/resource/<resourceID>.png<br>
+https://banners.plajer.xyz/resource/resourceID.png<br>
 <i>Example: https://banners.plajer.xyz/resource/9661.png</i><br>
 ![alt text](https://banners.plajer.xyz/resource/9661/banner.png?width=400)
   
 <strong>Resource List</strong>
-https://banners.plajer.xyz/author/<authorID>.png<br>
+https://banners.plajer.xyz/author/authorID.png<br>
 <i>Example: https://banners.plajer.xyz/author/1.png</i><br>
 ![alt text](https://banners.plajer.xyz/author/1/banner.png?width=1200)
   
