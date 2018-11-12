@@ -12,3 +12,10 @@ https://banners.plajer.xyz/resource/<resourceID>/banner.png<br>
 https://banners.plajer.xyz/author/<authorID>/banner.png<br>
 <i>Example: https://banners.plajer.xyz/author/1/banner.png</i><br>
 ![alt text](https://banners.plajer.xyz/author/1/banner.png?width=1200)
+  
+# Generator
+You can use the banner generator to generate resource banner easily.
+https://banners.plajer.xyz/generator
+
+# Font List
+![alt text](https://banners.plajer.xyz/fonts/f.png)
