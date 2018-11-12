@@ -15,7 +15,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-public class BevelShape extends JPanel {
+public class RoundRectBkg extends JPanel {
 
     static final FontRenderContext frc = new FontRenderContext(null, true, true);
     /**
@@ -26,7 +26,7 @@ public class BevelShape extends JPanel {
     HashMap<TextLayout, Point> texts = new HashMap<>();
     HashMap<BufferedImage, Rectangle> image = new HashMap<>();
 
-    public BevelShape(Boolean bright) {
+    public RoundRectBkg(Boolean bright) {
         rate = new Color(
                 bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0),
                 bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0),

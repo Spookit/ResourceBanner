@@ -55,25 +55,17 @@ public class Resource {
             String b = new String();
             while((l = r.readLine()) != null) b += l;
             Resource res = gson.fromJson(b, Resource.class);
-            if(isResourceExists(res)) return res;
+            return res;
         } catch(Throwable t) {
         }
         return null;
     }
 
-    public static boolean isResourceExists(Resource res) {
-        try {
-            if(res == null) return false;
-            return true;
-        } catch(Throwable t) {
-        }
-        return false;
-    }
 
-    public static ArrayList<Resource> byAuthor(String id, int limit) {
+    public static ArrayList<Resource> byAuthor(String id, int limit,Sort.SortType type,Sort.SortDirection order) {
         try {
             limit++;
-            URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?sort=-downloads&fields=id&size=" + limit);
+            URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?fields=id&size=" + limit+"&sort="+Sort.toString(type, order));
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
             BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -91,9 +83,9 @@ public class Resource {
         }
     }
 
-    public static ArrayList<Resource> byAuthor(String id) {
+    public static ArrayList<Resource> byAuthor(String id, Sort.SortDirection order, Sort.SortType type) {
         try {
-            URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?size=7&sort=-downloads&fields=id");
+        	 URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?fields=id&sort="+Sort.toString(type, order));
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
             BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));

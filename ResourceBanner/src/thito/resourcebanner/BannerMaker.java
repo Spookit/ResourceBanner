@@ -1,20 +1,11 @@
 package thito.resourcebanner;
 
-import org.apache.commons.io.IOUtils;
-import org.spookit.betty.ContentType;
-import org.spookit.betty.Header;
-import org.spookit.betty.HttpField;
-import org.spookit.betty.WebServer;
-
-import javax.imageio.ImageIO;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -23,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,12 +23,23 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
+import javax.imageio.ImageIO;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import org.apache.commons.io.IOUtils;
+import org.spookit.betty.ContentType;
+import org.spookit.betty.Header;
+import org.spookit.betty.HttpField;
+import org.spookit.betty.WebServer;
+
 public class BannerMaker extends WebServer {
 
     public static final Properties config = new Properties();
+    public static final ArrayList<String> LATEST_HOSTS = new ArrayList<>();
     public static final String defaultFont = "?";
     static final Thread SAVE;
-    public static String[] supportedTypes = {"png", "jpg", "jpeg"};
+    public static String[] supportedTypes = {"png", "jpg", "jpeg","webp"};
     public static int defaultType = 0;
     public static long REQUESTS = 0;
     static long past = 0;
@@ -54,17 +57,10 @@ public class BannerMaker extends WebServer {
                 }
             }
         });
-    }
-
-    static {
-
         System.setProperty("http.agent", "");
+    }
 
-    }
-    BannerMaker() {
-        super(4444);
-    }
-    BannerMaker(int port) {
+    public BannerMaker(int port) {
         super(port);
     }
 
@@ -147,7 +143,7 @@ public class BannerMaker extends WebServer {
         SAVE.run();
     }
 
-    public static BevelShape process(BevelShape img, String font, Color c) {
+    public static RoundRectBkg process(RoundRectBkg img, String font, Color c) {
         if(c != null) img.rate = c;
         img.addText("And More...", new Font(font, Font.BOLD, 24), 35, 55);
         return img;
@@ -169,7 +165,7 @@ public class BannerMaker extends WebServer {
         return b;
     }
 
-    public static BevelShape stats(BevelShape img, String font, String subFont) {
+    public static RoundRectBkg stats(RoundRectBkg img, String font, String subFont) {
         img.setSize(img.getWidth(), 160);
         Runtime runtime = Runtime.getRuntime();
         double maxMem = runtime.maxMemory() / (1024.0 * 1024.0);
@@ -192,28 +188,28 @@ public class BannerMaker extends WebServer {
         return img;
     }
 
-    public static BevelShape big(BevelShape img, String text, String font) {
+    public static RoundRectBkg big(RoundRectBkg img, String text, String font) {
         img.addText(text, new Font(font, Font.BOLD, 24), 25, 55);
         return img;
     }
 
-    public static BevelShape noResource(BevelShape img, String font) {
+    public static RoundRectBkg noResource(RoundRectBkg img, String font) {
         img.addText("No Resource", new Font(font, Font.BOLD, 24), 25, 55);
         return img;
     }
 
-    public static BevelShape process(BevelShape img, Resource resource, String headerFont, String fontName, Color col) {
+    public static RoundRectBkg process(RoundRectBkg img, Resource resource, String headerFont, String fontName, Color col) {
         if(col != null) img.rate = col;
         if(fontName == null) fontName = headerFont;
         if(resource.icon.data.isEmpty()) {
             if(resource.premium) {
                 img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 15, 20);
                 img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 15, 35);
-                img.addText("★ ", new Font("?", 0, 11), 15, 35);
+                img.addText("★ ", new Font("?", 0, 11), 15, 50);
                 img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 30, 50);
-                img.addText("➜ ", new Font("?", 0, 11), 15, 50);
+                img.addText("➜ ", new Font("?", 0, 11), 15, 65);
                 img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 30, 65);
-                img.addText("❖ ", new Font("?", 0, 11), 15, 65);
+                img.addText("❖ ", new Font("?", 0, 11), 15, 80);
                 img.addText(resource.price + " " + (resource.currency == null ? "USD" : resource.currency), new Font(fontName, Font.BOLD, 13), 30, 80);
             } else {
                 img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 15, 25);
@@ -231,9 +227,9 @@ public class BannerMaker extends WebServer {
                 img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 105, 50);
                 img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 105, 65);
                 img.addText(resource.price + " " + (resource.currency == null ? "USD" : resource.currency), new Font(fontName, Font.BOLD, 13), 105, 80);
-                img.addText("★ ", new Font("?", 0, 11), 15, 50);
-                img.addText("➜ ", new Font("?", 0, 11), 15, 65);
-                img.addText("❖ ", new Font("?", 0, 11), 15, 80);
+                img.addText("★ ", new Font("?", 0, 11), 90, 50);
+                img.addText("➜ ", new Font("?", 0, 11), 90, 65);
+                img.addText("❖ ", new Font("?", 0, 11), 90, 80);
             } else {
                 img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 90, 25);
                 img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 90, 40);
@@ -248,6 +244,16 @@ public class BannerMaker extends WebServer {
 
     @Override
     public void handle(OutputStream out, BufferedReader reader, Socket socket, String[] path, Properties props) throws Throwable {
+    	/*
+    	 * Host record
+    	 */
+    	InetAddress address = socket.getInetAddress();
+    	String host = address.getCanonicalHostName();
+    	LATEST_HOSTS.remove(host);
+    	LATEST_HOSTS.add(host);
+    	/*
+    	 * API handler
+    	 */
         Header header = new Header();
         REQUESTS++;
         past = System.currentTimeMillis();
@@ -263,63 +269,76 @@ public class BannerMaker extends WebServer {
         if(props.containsKey("subfont")) {
             subFont = props.getProperty("subfont");
         }
-        try {
-            if(path.length > 0 && path[0].equalsIgnoreCase("favicon.ico")) {
-                header.send(out);
-                IOUtils.copy(getResource("icon.ico"), out);
-                done();
-                return;
-            }
-        } catch(Throwable t) {
-        }
         Boolean bright = null;
         if(props.containsKey("bright")) {
             bright = Boolean.parseBoolean(props.getProperty("bright"));
         }
         String format = supportedTypes[defaultType];
         if(path.length > 0) {
-            String f[] = path[path.length - 1].split("\\.");
-            if(f.length == 2) {
+            String f[] = path[path.length - 1].split("\\.",2);
+            if(f.length >= 2) {
                 format = f[1].toLowerCase();
-                path = Arrays.copyOf(path, path.length - 1);
+                path[path.length-1] = f[0];
                 if(!Arrays.asList(supportedTypes).contains(format)) {
                     format = supportedTypes[defaultType];
                 }
             }
         }
-        //System.out.println("Host: "+socket.getInetAddress().getHostName()+"/"+socket.getInetAddress().getHostAddress()+" : "+Arrays.toString(path));
         header.fields.put(HttpField.ContentType, "image/" + format);
         /*
          * Global queries
          */
         int width = -1;
         Color defColor = null;
+        int sizeLimit = 6;
+        Sort.SortType sortBy = null;
+        Sort.SortDirection sortOrder = null;
+        if (props.containsKey("sort")) {
+        	sortBy = Sort.SortType._valueOf(props.getProperty("sort"));
+        }
+        if (props.containsKey("order")) {
+        	sortOrder = Sort.SortDirection._valueOf(props.getProperty("order"));
+        }
         if(props.containsKey("width")) {
             try {
                 width = Integer.parseInt(props.getProperty("width"));
             } catch(Throwable t) {
             }
         }
-
         if(props.containsKey("color")) {
             defColor = ImageUtil.hex2Rgb(props.getProperty("color"));
-        } else if(props.containsKey("nicecolor") && Boolean.getBoolean(props.getProperty("nicecolor"))) {
+        } else if (props.containsKey("nicecolor") && Boolean.getBoolean(props.getProperty("nicecolor"))) {
             defColor = ImageUtil.niceColor();
         }
-        int sizeLimit = 6;
         if(props.containsKey("size")) {
             try {
                 sizeLimit = Integer.parseInt(props.getProperty("size"));
             } catch(Throwable t) {
             }
         }
+        // TAK SEMUDAH ITU FERGUSO >:)
         if(sizeLimit > 50) sizeLimit = 50;
+        //
         try {
             if(path.length > 0) {
+            	if(path[0].equalsIgnoreCase("favicon")) {
+                    header.send(out);
+                    IOUtils.copy(getResource("icon.ico"), out);
+                    done();
+                    return;
+                }
+            	if (path[0].equalsIgnoreCase("hosts")) {
+            		header.fields.put(HttpField.ContentType, ContentType.ApplicationJSON);
+            		header.content = Resource.gson.toJson(LATEST_HOSTS);
+            		header.send(out);
+            		done();
+            		return;
+            	}
                 if(path[0].equalsIgnoreCase("generator")) {
                     header.fields.put(HttpField.ContentType, ContentType.TextHTML);
                     header.send(out);
-                    IOUtils.copy(getResource("generator.html"), out);
+                    // Was thrown out of the jar IOUtils.copy(getResource("generator.html"), out);
+                    IOUtils.copy(new FileInputStream(getFile("generator.html")), out);
                     done();
                     return;
                 }
@@ -346,29 +365,27 @@ public class BannerMaker extends WebServer {
                 }
                 if(path[0].equalsIgnoreCase("author")) {
                     if(path.length > 1) {
-
-
                         String authorID = path[1];
-                        ArrayList<Resource> res = Resource.byAuthor(authorID, sizeLimit);
-                        ArrayList<BevelShape> imgs = new ArrayList<>();
+                        ArrayList<Resource> res = Resource.byAuthor(authorID, sizeLimit,sortBy,sortOrder);
+                        ArrayList<RoundRectBkg> imgs = new ArrayList<>();
                         if(sizeLimit > 0) if(res.size() > sizeLimit && sizeLimit > 1) {
                             for(int i = 0; i < sizeLimit - 1; i++) {
-                                imgs.add(process(new BevelShape(bright), res.get(i), fontName, subFont, defColor));
+                                imgs.add(process(new RoundRectBkg(bright), res.get(i), fontName, subFont, defColor));
                             }
-                            imgs.add(process(new BevelShape(bright), fontName, defColor));
+                            imgs.add(process(new RoundRectBkg(bright), fontName, defColor));
                         } else if(sizeLimit == 1) {
                             for(Resource r : res) {
-                                imgs.add(process(new BevelShape(bright), r, fontName, subFont, defColor));
+                                imgs.add(process(new RoundRectBkg(bright), r, fontName, subFont, defColor));
                                 break;
                             }
                         } else {
                             for(Resource r : res) {
-                                imgs.add(process(new BevelShape(bright), r, fontName, subFont, defColor));
+                                imgs.add(process(new RoundRectBkg(bright), r, fontName, subFont, defColor));
                             }
 
                         }
                         if(imgs.isEmpty()) {
-                            imgs.add(noResource(new BevelShape(bright), fontName));
+                            imgs.add(noResource(new RoundRectBkg(bright), fontName));
                         }
                         JPanel j = SwingUtil.collect(imgs, width);
                         header.send(out);
@@ -379,7 +396,7 @@ public class BannerMaker extends WebServer {
                 }
                 if(path[0].equalsIgnoreCase("spiget")) {
                     SpigetStatus stats = SpigetStatus.getStatus();
-                    BevelShape img = new BevelShape(bright);
+                    RoundRectBkg img = new RoundRectBkg(bright);
                     if(defColor != null) img.rate = defColor;
                     img.addText("API Status - Spiget", new Font(fontName, Font.BOLD, 13), 15, 20);
                     img.addText("Server Name: " + stats.status.server.name, new Font(subFont, 0, 11), 15, 35);
@@ -395,7 +412,7 @@ public class BannerMaker extends WebServer {
                     return;
                 }
                 if(path[0].equalsIgnoreCase("stats") || path[0].equalsIgnoreCase("status") || path[0].equalsIgnoreCase("stat")) {
-                    BevelShape img = new BevelShape(bright);
+                    RoundRectBkg img = new RoundRectBkg(bright);
                     stats(img, fontName, subFont);
                     if(width > 0) {
                         img.setSize(width, img.getHeight());
@@ -409,7 +426,7 @@ public class BannerMaker extends WebServer {
                     if(path.length > 1) {
                         String resourceID = path[1];
                         Resource resource = Resource.getResource(resourceID);
-                        BevelShape img = new BevelShape(bright);
+                        RoundRectBkg img = new RoundRectBkg(bright);
                         if(resource != null)
                             process(img, resource, fontName, subFont, defColor);
                         else {
@@ -425,25 +442,16 @@ public class BannerMaker extends WebServer {
                     }
                 }
             }
-            throw new RuntimeException(new FileNotFoundException());
+            throw new RuntimeException();
         } catch(RuntimeException io) {
-            if(io.getCause() instanceof FileNotFoundException) {
-                BevelShape img = new BevelShape(bright);
-                if(defColor != null) img.rate = defColor;
-                big(img, "Not Found :/", fontName);
-                header.send(out);
-                ImageIO.write(SwingUtil.convert(img), format, out);
-            } else {
-                io.printStackTrace();
-                BevelShape img = new BevelShape(bright);
-                if(defColor != null) img.rate = defColor;
-                big(img, "Server Error :(", fontName);
-                header.send(out);
-                ImageIO.write(SwingUtil.convert(img), format, out);
-            }
+        	RoundRectBkg img = new RoundRectBkg(bright);
+            if(defColor != null) img.rate = defColor;
+            big(img, "Not Found :/", fontName);
+            header.send(out);
+            ImageIO.write(SwingUtil.convert(img), format, out);
         } catch(Throwable t) {
             t.printStackTrace();
-            BevelShape img = new BevelShape(bright);
+            RoundRectBkg img = new RoundRectBkg(bright);
             if(defColor != null) img.rate = defColor;
             big(img, "Server Error :(", "?");
             //img.setBounds(0,0,200,100);

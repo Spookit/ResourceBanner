@@ -27,53 +27,53 @@ public class SpigetStatus {
     }
 
     public static class SpigetServer {
-        String name;
-        String mode;
+        public String name;
+        public String mode;
     }
 
     public static class SpigetFetch {
-        long start;
-        long end;
-        Page page;
-        boolean active;
+        public long start;
+        public long end;
+        public Page page;
+        public boolean active;
     }
 
     public static class SpigetExistence {
-        long start;
-        long end;
-        Document document;
-        boolean active;
+        public long start;
+        public long end;
+        public Document document;
+        public boolean active;
     }
 
     public static class Document {
-        int amount;
-        int suspects;
-        int index;
-        int id;
+        public int amount;
+        public int suspects;
+        public int index;
+        public int id;
     }
 
     public static class Page {
-        int amount;
-        int index;
-        PageItem item;
+        public int amount;
+        public int index;
+        public PageItem item;
     }
 
     public static class PageItem {
-        int index;
-        String state;
+        public int index;
+        public String state;
     }
 
     public static class ServerStatus {
-        SpigetServer server;
-        SpigetFetch fetch;
-        SpigetExistence existence;
+    	public SpigetServer server;
+    	public SpigetFetch fetch;
+    	public SpigetExistence existence;
     }
 
     public static class ServerStats {
-        int resources;
-        int authors;
-        int categories;
-        int resource_updates;
-        int resource_versions;
+    	public int resources;
+    	public int authors;
+    	public int categories;
+    	public int resource_updates;
+    	public int resource_versions;
     }
 }

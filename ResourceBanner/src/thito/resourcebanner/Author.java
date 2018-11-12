@@ -32,19 +32,4 @@ public class Author {
         return null;
     }
 
-    public static Author getAuthorWithIcon(String id) {
-        try {
-            URL url = new URL("https://api.spiget.org/v2/authors/" + id + "?fields=name,icon");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
-            BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String l;
-            String b = new String();
-            while((l = r.readLine()) != null) b += l;
-            return Resource.gson.fromJson(b, Author.class);
-        } catch(Throwable t) {
-            t.printStackTrace();
-        }
-        return null;
-    }
 }
