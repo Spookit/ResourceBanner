@@ -53,7 +53,7 @@ public class BannerMaker extends WebServer {
 			public void run() {
 				try {
 					config.setProperty("api-requests", REQUESTS + "");
-					config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.5 by BlueObsidian");
+					config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.6.7 by BlueObsidian");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
