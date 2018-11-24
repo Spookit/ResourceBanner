@@ -1,6 +1,5 @@
 package thito.resourcebanner;
 
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -15,6 +14,8 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import javax.swing.JPanel;
+
 public class RoundRectBkg extends JPanel {
 
     static final FontRenderContext frc = new FontRenderContext(null, true, true);
@@ -25,14 +26,18 @@ public class RoundRectBkg extends JPanel {
     Color rate;
     HashMap<TextLayout, Point> texts = new HashMap<>();
     HashMap<BufferedImage, Rectangle> image = new HashMap<>();
+    Rectangle r;
+    double av;
+    boolean countBoth = true;
 
     public RoundRectBkg(Boolean bright) {
-        rate = new Color(
+    	rate = new Color(
                 bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0),
                 bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0),
                 bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0)
         );
         setBounds(0, 0, 50, 100);
+        setSize(50,100);
     }
 
     private static int getBrightness(Color c) {
@@ -53,21 +58,21 @@ public class RoundRectBkg extends JPanel {
         return Double.valueOf(x / max).intValue();
     }
 
-    public boolean isBright() {
-        return rate.getBlue() > 200 || rate.getGreen() > 200 || rate.getRed() > 200;
-    }
-
     public void addText(String s, Font font, int x, int y) {
         FontMetrics met = this.getFontMetrics(font);
-        int width = x + met.stringWidth(s) + x;
+        int width = x + met.stringWidth(s) + (countBoth ? x : 15);
         if(width > getWidth()) setSize(width, getHeight());
         TextLayout t = new TextLayout(s, font, frc);
-
         texts.put(t, new Point(x, y));
     }
 
     public void addImage(BufferedImage img, int x, int y, int w, int h) {
         image.put(img, new Rectangle(x, y, w, h));
+    }
+    
+    public void setRatings(int x,int y,int w,int h,double average) {
+    	r = new Rectangle(x,y,w,h);
+    	av = average;
     }
 
     public void paint(Graphics g) {
@@ -85,6 +90,8 @@ public class RoundRectBkg extends JPanel {
         for(Entry<BufferedImage, Rectangle> img : image.entrySet()) {
             g.drawImage(img.getKey(), img.getValue().x, img.getValue().y, img.getValue().width, img.getValue().height, this);
         }
-        g.dispose();
+        if (r != null) {
+        	Experimental.createRatings(g, r, av);
+        }
     }
 }

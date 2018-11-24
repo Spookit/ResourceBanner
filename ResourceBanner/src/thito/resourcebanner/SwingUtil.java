@@ -17,8 +17,8 @@ public class SwingUtil {
     static ArrayList<Font> FONTS = new ArrayList<>();
 
     public static BufferedImage convert(Component c) {
-        int w = c.getWidth();
-        int h = c.getHeight();
+        int w = Math.max(50, Math.max(c.getWidth(), c.getBounds().width));
+        int h = Math.max(100, Math.max(c.getHeight(), c.getBounds().height));
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics g = img.createGraphics();
         c.doLayout();

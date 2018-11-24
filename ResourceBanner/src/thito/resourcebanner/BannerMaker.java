@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,10 +32,12 @@ import org.spookit.betty.Header;
 import org.spookit.betty.HttpField;
 import org.spookit.betty.WebServer;
 
+import thito.resourcebanner.Sort.SortDirection;
+import thito.resourcebanner.Sort.SortType;
+
 public class BannerMaker extends WebServer {
 
     public static final Properties config = new Properties();
-    public static final ArrayList<String> LATEST_HOSTS = new ArrayList<>();
     public static final String defaultFont = "?";
     static final Thread SAVE;
     public static String[] supportedTypes = {"png", "jpg", "jpeg","webp"};
@@ -80,6 +81,11 @@ public class BannerMaker extends WebServer {
             config.load(new FileReader(getFile("/config.properties")));
             REQUESTS = Integer.parseInt(config.getProperty("api-requests"));
             Runtime.getRuntime().addShutdownHook(SAVE);
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+            	public void run() {
+            		System.out.println("Shutting down server...");
+            	}
+            });
         } catch(Throwable t) {
             System.out.println("Failed to load configuration");
             t.printStackTrace();
@@ -124,12 +130,22 @@ public class BannerMaker extends WebServer {
     public static void dispatchCommand(String cmd) {
         if(cmd.startsWith("exit")) {
             System.exit(0);
+            return;
         }
         if(cmd.startsWith("save")) {
             System.out.println("Saving configuration...");
             SAVE.run();
             System.out.println("Done!");
+            return;
         }
+        if (cmd.startsWith("help")) {
+        	System.out.println("Commands:");
+        	System.out.println(" help - Shows this page");
+        	System.out.println(" save - Save the config");
+        	System.out.println(" exit - Stop the app");
+        	return;
+        }
+        System.out.println("Unknown Command! Type 'help' for help");
     }
 
     public static InputStream getResource(String name) {
@@ -198,15 +214,22 @@ public class BannerMaker extends WebServer {
         return img;
     }
 
+    public static double roundToHalf(double d) {
+        return Math.round(d * 2) / 2.0;
+    }
+    
     public static RoundRectBkg process(RoundRectBkg img, Resource resource, String headerFont, String fontName, Color col) {
+    	resource.rating.average = roundToHalf(resource.rating.average);
+    	img.countBoth = false;
         if(col != null) img.rate = col;
         if(fontName == null) fontName = headerFont;
         if(resource.icon.data.isEmpty()) {
             if(resource.premium) {
                 img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 15, 20);
                 img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 15, 35);
-                img.addText("★ ", new Font("?", 0, 11), 15, 50);
-                img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 30, 50);
+                img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 95, 50);
+                //RATINGS
+                img.setRatings(15, 39, 75, 13, resource.rating.average);
                 img.addText("➜ ", new Font("?", 0, 11), 15, 65);
                 img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 30, 65);
                 img.addText("❖ ", new Font("?", 0, 11), 15, 80);
@@ -214,43 +237,42 @@ public class BannerMaker extends WebServer {
             } else {
                 img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 15, 25);
                 img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 15, 40);
-                img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 30, 55);
-                img.addText("★ ", new Font("?", 0, 11), 15, 55);
+                img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 95, 55);
+                //RATINGS
+                img.setRatings(15, 44, 75, 13, resource.rating.average);
                 img.addText("➜ ", new Font("?", 0, 11), 15, 70);
                 img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 30, 70);
             }
         } else {
+        	
             img.addImage(resource.icon.get(), 15, 15, 60, 60);
             if(resource.premium) {
                 img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 90, 20);
                 img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 90, 35);
-                img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 105, 50);
+                img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 170, 50);
                 img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 105, 65);
                 img.addText(resource.price + " " + (resource.currency == null ? "USD" : resource.currency), new Font(fontName, Font.BOLD, 13), 105, 80);
-                img.addText("★ ", new Font("?", 0, 11), 90, 50);
+              //RATINGS
+                img.setRatings(90, 39, 75, 13, resource.rating.average);
                 img.addText("➜ ", new Font("?", 0, 11), 90, 65);
                 img.addText("❖ ", new Font("?", 0, 11), 90, 80);
             } else {
                 img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 90, 25);
                 img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 90, 40);
-                img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 105, 55);
+                img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings", new Font(fontName, 0, 11), 170, 55);
                 img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 105, 70);
-                img.addText("★ ", new Font("?", 0, 11), 90, 55);
+              //RATINGS
+                img.setRatings(90, 44, 75, 13, resource.rating.average);
                 img.addText("➜ ", new Font("?", 0, 11), 90, 70);
             }
         }
         return img;
     }
-
+    public static <T extends Enum<T>> T random(Class<T> e) {
+    	return e.getEnumConstants()[ImageUtil.random.nextInt(e.getEnumConstants().length)];
+    }
     @Override
-    public void handle(OutputStream out, BufferedReader reader, Socket socket, String[] path, Properties props) throws Throwable {
-    	/*
-    	 * Host record
-    	 */
-    	InetAddress address = socket.getInetAddress();
-    	String host = props.getProperty("referer",props.getProperty("host", address.getHostName()));
-    	LATEST_HOSTS.remove(host);
-    	LATEST_HOSTS.add(host);
+    public void handle(OutputStream out, BufferedReader reader, Socket socket, String[] path, Properties props,Properties browser) throws Throwable {
     	/*
     	 * API handler
     	 */
@@ -289,7 +311,6 @@ public class BannerMaker extends WebServer {
          * Global queries
          */
         int width = -1;
-        Color defColor = null;
         int sizeLimit = 6;
         Sort.SortType sortBy = null;
         Sort.SortDirection sortOrder = null;
@@ -305,6 +326,7 @@ public class BannerMaker extends WebServer {
             } catch(Throwable t) {
             }
         }
+        Color defColor = null;
         if(props.containsKey("color")) {
             defColor = ImageUtil.hex2Rgb(props.getProperty("color"));
         } else if (props.containsKey("nicecolor") && Boolean.getBoolean(props.getProperty("nicecolor"))) {
@@ -327,13 +349,6 @@ public class BannerMaker extends WebServer {
                     done();
                     return;
                 }
-            	if (path[0].equalsIgnoreCase("hosts")) {
-            		header.fields.put(HttpField.ContentType, ContentType.ApplicationJSON);
-            		header.content = Resource.gson.toJson(LATEST_HOSTS);
-            		header.send(out);
-            		done();
-            		return;
-            	}
                 if(path[0].equalsIgnoreCase("generator")) {
                     header.fields.put(HttpField.ContentType, ContentType.TextHTML);
                     header.send(out);
@@ -362,6 +377,21 @@ public class BannerMaker extends WebServer {
                     ImageIO.write(SwingUtil.convert(panel), format, out);
                     done();
                     return;
+                }
+                if (path[0].equalsIgnoreCase("random")) {
+                	if (path.length > 1) {
+                		String authorID = path[1];
+                		ArrayList<Resource> res = Resource.byAuthor(authorID, 10, random(SortType.class), random(SortDirection.class));
+                		ArrayList<RoundRectBkg> imgs = new ArrayList<>();
+                        if(res.isEmpty()) {
+                            imgs.add(noResource(new RoundRectBkg(bright), fontName));
+                        } else  imgs.add(process(new RoundRectBkg(bright), res.get(ImageUtil.random.nextInt(res.size())), fontName, subFont, defColor));
+                        JPanel j = SwingUtil.collect(imgs, width);
+                        header.send(out);
+                        ImageIO.write(SwingUtil.convert(j), format, out);
+                        done();
+                        return;
+                	}
                 }
                 if(path[0].equalsIgnoreCase("author")) {
                     if(path.length > 1) {

@@ -63,6 +63,7 @@ public abstract class WebServer {
 							    String[] x1 = request.split(" ",2);
 							    String path = "/";
 							    Properties props = new Properties();
+							    Properties bro = new Properties();
 							    if (x1.length == 2) {
 							    	path = x1[1];
 							    	int lastIndex = path.lastIndexOf("HTTP/");
@@ -85,11 +86,15 @@ public abstract class WebServer {
 							    while (true) {
 							    	String ignore=in.readLine();
 							    	if (ignore==null || ignore.replace(" ", "").replace(newLine, "").length()==0) break;
+							    	String[] i = ignore.split(":");
+							    	if (i.length == 2) {
+							    		bro.put(i[0].trim(), i[1].trim());
+							    	}
 							    }
 							    if (!request.startsWith("GET ") || !(request.endsWith(" HTTP/1.0") || request.endsWith(" HTTP/1.1"))) {
 							    	out.write(("HTTP/1.1 400 Bad Request"+newLine+newLine).getBytes("UTF-8"));
 							    } else {
-							    	handle(out,in,sock,paths,props);
+							    	handle(out,in,sock,paths,props,bro);
 							    }
 								sock.close();
 							} catch (Throwable t) {
@@ -106,5 +111,5 @@ public abstract class WebServer {
 		}
 	}
 	
-	public abstract void handle(OutputStream out,BufferedReader reader,Socket socket,String[]path,Properties props) throws Throwable;
+	public abstract void handle(OutputStream out,BufferedReader reader,Socket socket,String[]path,Properties props, Properties browser) throws Throwable;
 }

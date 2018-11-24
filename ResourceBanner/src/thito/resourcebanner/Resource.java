@@ -1,14 +1,15 @@
 package thito.resourcebanner;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import org.spookit.betty.HttpField;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+
+import org.spookit.betty.HttpField;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class Resource {
     static final Gson gson = new Gson();
