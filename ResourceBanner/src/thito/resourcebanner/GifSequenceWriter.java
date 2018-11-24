@@ -143,7 +143,6 @@ public class GifSequenceWriter {
 		gifWriter.endWriteSequence();
 	}
 
-	
 	public void writeToSequence(RenderedImage img) throws IOException {
 		gifWriter.writeToSequence(new IIOImage(img, null, imageMetaData), imageWriteParam);
 	}

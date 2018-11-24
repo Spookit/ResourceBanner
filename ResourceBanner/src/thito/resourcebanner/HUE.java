@@ -9,18 +9,20 @@ public class HUE {
 	float step = 0.01F;
 	float sat = 0.5F;
 	float bri = 1F;
-	
+
 	public Color next() {
 		if (up) {
 			if (hue >= 1) {
 				up = false;
-				hue-=step;
-			} else hue+=step;
+				hue -= step;
+			} else
+				hue += step;
 		} else {
 			if (hue <= 0) {
 				up = true;
-				hue+=step;
-			} else hue-=step;
+				hue += step;
+			} else
+				hue -= step;
 		}
 		return Color.getHSBColor(hue, sat, bri);
 	}
