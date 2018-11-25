@@ -5,20 +5,19 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.spookit.betty.HttpField;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-public class Resource {
+public class SpigotResource {
 	static final Gson gson = new Gson();
+	static final Map<String,String> cookies = new HashMap<>();
 
-	static {
-
-	}
-
-	public static ArrayList<Resource> byAuthor(String id, int limit, Sort.SortType type, Sort.SortDirection order) {
+	public static ArrayList<SpigotResource> byAuthor(String id, int limit, Sort.SortType type, Sort.SortDirection order) {
 		try {
 			limit++;
 			URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?fields=id&size=" + limit
@@ -30,8 +29,8 @@ public class Resource {
 			String b = new String();
 			while ((l = r.readLine()) != null)
 				b += l;
-			ArrayList<Resource> res = new ArrayList<>();
-			for (Resource rx : gson.fromJson(b, Resource[].class)) {
+			ArrayList<SpigotResource> res = new ArrayList<>();
+			for (SpigotResource rx : gson.fromJson(b, SpigotResource[].class)) {
 				rx = getResource(rx.id + "");
 				if (rx != null)
 					res.add(rx);
@@ -42,7 +41,7 @@ public class Resource {
 		}
 	}
 
-	public static ArrayList<Resource> byAuthor(String id, Sort.SortDirection order, Sort.SortType type) {
+	public static ArrayList<SpigotResource> byAuthor(String id, Sort.SortDirection order, Sort.SortType type) {
 		try {
 			URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?fields=id&sort="
 					+ Sort.toString(type, order));
@@ -53,8 +52,8 @@ public class Resource {
 			String b = new String();
 			while ((l = r.readLine()) != null)
 				b += l;
-			ArrayList<Resource> res = new ArrayList<>();
-			for (Resource rx : gson.fromJson(b, Resource[].class)) {
+			ArrayList<SpigotResource> res = new ArrayList<>();
+			for (SpigotResource rx : gson.fromJson(b, SpigotResource[].class)) {
 				rx = getResource(rx.id + "");
 				if (rx != null)
 					res.add(rx);
@@ -65,9 +64,9 @@ public class Resource {
 		}
 	}
 
-	public static Resource getResource(String id) {
+	public static SpigotResource getResource(String id) {
 		try {
-			URL url = new URL("https://api.spiget.org/v2/resources/" + id
+			URL url = new URL("https://nougat.api.spiget.org/v2/resources/" + id
 					+ "?fields=name,rating,downloads,icon,author,premium,currency,price");
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
@@ -76,13 +75,15 @@ public class Resource {
 			String b = new String();
 			while ((l = r.readLine()) != null)
 				b += l;
-			Resource res = gson.fromJson(b, Resource.class);
+			SpigotResource res = gson.fromJson(b, SpigotResource.class);
+			if (res.existenceStatus != 0) return null;
 			return res;
 		} catch (Throwable t) {
+
 		}
 		return null;
 	}
-
+	public int existenceStatus;
 	public boolean external;
 	public ResourceFile file;
 	public String description;
@@ -107,11 +108,9 @@ public class Resource {
 	public boolean premium;
 	public double price;
 	public String currency;
-
 	public int id;
-
 	public IconContainer icon;
-
+	
 	Author au = null;
 
 	public Author getAuthor() {

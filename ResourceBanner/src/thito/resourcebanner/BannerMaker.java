@@ -32,9 +32,6 @@ import org.spookit.betty.Header;
 import org.spookit.betty.HttpField;
 import org.spookit.betty.WebServer;
 
-import thito.resourcebanner.Sort.SortDirection;
-import thito.resourcebanner.Sort.SortType;
-
 public class BannerMaker extends WebServer {
 
 	public static final Properties config = new Properties();
@@ -167,7 +164,7 @@ public class BannerMaker extends WebServer {
 		return img;
 	}
 
-	public static RoundRectBkg process(RoundRectBkg img, Resource resource, String headerFont, String fontName,
+	public static RoundRectBkg process(RoundRectBkg img, SpigotResource resource, String headerFont, String fontName,
 			Color col) {
 		resource.rating.average = roundToHalf(resource.rating.average);
 		img.countBoth = false;
@@ -398,8 +395,7 @@ public class BannerMaker extends WebServer {
 				if (path[0].equalsIgnoreCase("random")) {
 					if (path.length > 1) {
 						String authorID = path[1];
-						ArrayList<Resource> res = Resource.byAuthor(authorID, 10, random(SortType.class),
-								random(SortDirection.class));
+						ArrayList<SpigotResource> res = SpigotResource.byAuthor(authorID, 10, sortBy,sortOrder);
 						ArrayList<RoundRectBkg> imgs = new ArrayList<>();
 						if (res.isEmpty()) {
 							imgs.add(noResource(new RoundRectBkg(bright), fontName));
@@ -416,7 +412,7 @@ public class BannerMaker extends WebServer {
 				if (path[0].equalsIgnoreCase("author")) {
 					if (path.length > 1) {
 						String authorID = path[1];
-						ArrayList<Resource> res = Resource.byAuthor(authorID, sizeLimit, sortBy, sortOrder);
+						ArrayList<SpigotResource> res = SpigotResource.byAuthor(authorID, sizeLimit, sortBy, sortOrder);
 						ArrayList<RoundRectBkg> imgs = new ArrayList<>();
 						if (sizeLimit > 0)
 							if (res.size() > sizeLimit && sizeLimit > 1) {
@@ -426,12 +422,12 @@ public class BannerMaker extends WebServer {
 								}
 								imgs.add(process(new RoundRectBkg(bright), fontName, defColor));
 							} else if (sizeLimit == 1) {
-								for (Resource r : res) {
+								for (SpigotResource r : res) {
 									imgs.add(process(new RoundRectBkg(bright), r, fontName, subFont, defColor));
 									break;
 								}
 							} else {
-								for (Resource r : res) {
+								for (SpigotResource r : res) {
 									imgs.add(process(new RoundRectBkg(bright), r, fontName, subFont, defColor));
 								}
 
@@ -479,7 +475,7 @@ public class BannerMaker extends WebServer {
 				if (path[0].equalsIgnoreCase("resource")) {
 					if (path.length > 1) {
 						String resourceID = path[1];
-						Resource resource = Resource.getResource(resourceID);
+						SpigotResource resource = SpigotResource.getResource(resourceID);
 						RoundRectBkg img = new RoundRectBkg(bright);
 						if (resource != null)
 							process(img, resource, fontName, subFont, defColor);

@@ -18,7 +18,7 @@ public class Author {
 			String b = new String();
 			while ((l = r.readLine()) != null)
 				b += l;
-			return Resource.gson.fromJson(b, Author.class);
+			return SpigotResource.gson.fromJson(b, Author.class);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}

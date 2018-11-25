@@ -69,7 +69,7 @@ public class SpigetStatus {
 			String b = new String();
 			while ((l = r.readLine()) != null)
 				b += l;
-			return Resource.gson.fromJson(b, SpigetStatus.class);
+			return SpigotResource.gson.fromJson(b, SpigetStatus.class);
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		}
