@@ -11,7 +11,7 @@ public class Header {
 	public Response response = Response.OK;
 	public final Map<HttpField, Object> fields = new HashMap<>();
 	public String content;
-
+	
 	public void send(OutputStream wr) throws Throwable {
 		wr.write(toString().getBytes("UTF-8"));
 		wr.flush();

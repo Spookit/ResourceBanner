@@ -20,8 +20,8 @@ public class Sort {
 	}
 
 	public enum SortType {
-		RATING, DOWNLOADS, NAME, PREMIUM;
-		public static SortType DEFAULT = DOWNLOADS;
+		rating, downloads, name, premium,likes, id, category, releaseDate, updateDate;
+		public static SortType DEFAULT = downloads;
 
 		public static SortType _valueOf(String s) {
 			for (SortType t : values())

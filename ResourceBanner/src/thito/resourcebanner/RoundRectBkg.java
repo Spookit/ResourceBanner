@@ -94,7 +94,7 @@ public class RoundRectBkg extends JPanel {
 					this);
 		}
 		if (r != null) {
-			Experimental.createRatings(g, r, av);
+			StarWars.createRatings(g, r, av);
 		}
 	}
 

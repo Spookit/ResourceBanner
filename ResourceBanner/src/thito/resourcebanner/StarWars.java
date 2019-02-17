@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public class Experimental {
+public class StarWars {
 
 	public static void createRatings(Graphics g, Rectangle bound, double average) {
 		double gap = (bound.width / 100D) * 2;

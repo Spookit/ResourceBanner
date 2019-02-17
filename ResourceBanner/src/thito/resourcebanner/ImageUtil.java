@@ -2,6 +2,8 @@ package thito.resourcebanner;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.io.File;
+import java.io.FileFilter;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -10,8 +12,26 @@ import javax.swing.JPanel;
 
 public class ImageUtil {
 
-	static final Color[] COLORS = { g(178, 179, 253), g(166, 243, 157), g(248, 130, 129) };
-	static final Random random = new Random();
+	public static final FileFilter IMAGES; 
+	public static final Color[] COLORS = { g(178, 179, 253), g(166, 243, 157), g(248, 130, 129) };
+	public static final Random random = new Random();
+	
+	static {
+		IMAGES = new FileFilter() {
+			
+			@Override
+			public boolean accept(File arg0) {
+				return arg0 != null && (
+						arg0.getName().endsWith(".png") ||
+						arg0.getName().endsWith(".jpg") ||
+						arg0.getName().endsWith(".jpeg") ||
+						arg0.getName().endsWith(".gif") ||
+						arg0.getName().endsWith(".bmp") ||
+						arg0.getName().endsWith(".webm") 
+						);
+			}
+		};
+	}
 
 	public static Color brightColor() {
 		return g(125 + random.nextInt(130), 125 + random.nextInt(130), 125 + random.nextInt(130));

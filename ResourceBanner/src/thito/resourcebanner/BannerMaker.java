@@ -18,8 +18,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
@@ -32,14 +36,21 @@ import org.spookit.betty.Header;
 import org.spookit.betty.HttpField;
 import org.spookit.betty.WebServer;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 public class BannerMaker extends WebServer {
 
-	public static final Properties config = new Properties();
-	public static final String defaultFont = "?";
+	public static final String HELP_THREAD = "https://www.spigotmc.org/threads/resource-banner-generate-your-own-banner.346493/"; 
+	static final Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
+	static final Set<String> resources = new HashSet<>();
+	static final Set<String> authors = new HashSet<>();
+	static final Properties config = new Properties();
+	static final String defaultFont = "?";
 	static final Thread SAVE;
-	public static String[] supportedTypes = { "png", "jpg", "jpeg", "webp" };
-	public static int defaultType = 0;
-	public static long REQUESTS = 0;
+	static String[] supportedTypes = { "png", "jpg", "jpeg", "webp" };
+	static int defaultType = 0;
+	static long REQUESTS = 0;
 	static long past = 0;
 	static long performance;
 	static RuntimeMXBean b = ManagementFactory.getRuntimeMXBean();
@@ -50,6 +61,8 @@ public class BannerMaker extends WebServer {
 			public void run() {
 				try {
 					config.setProperty("api-requests", REQUESTS + "");
+					config.setProperty("resources-requests", SpigotResource.gson.toJson(resources));
+					config.setProperty("authors-requests", SpigotResource.gson.toJson(authors));
 					config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.6.7 by BlueObsidian");
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -325,6 +338,7 @@ public class BannerMaker extends WebServer {
 		int width = -1;
 		int sizeLimit = 6;
 		Sort.SortType sortBy = null;
+		int truncate = -1;
 		Sort.SortDirection sortOrder = null;
 		if (props.containsKey("sort")) {
 			sortBy = Sort.SortType._valueOf(props.getProperty("sort"));
@@ -335,6 +349,12 @@ public class BannerMaker extends WebServer {
 		if (props.containsKey("width")) {
 			try {
 				width = Integer.parseInt(props.getProperty("width"));
+			} catch (Throwable t) {
+			}
+		}
+		if (props.containsKey("truncate")) {
+			try {
+				truncate = Integer.parseInt(props.getProperty("truncate"));
 			} catch (Throwable t) {
 			}
 		}
@@ -362,6 +382,21 @@ public class BannerMaker extends WebServer {
 					done();
 					return;
 				}
+				if (path[0].equalsIgnoreCase("data")) {
+					header.fields.put(HttpField.ContentType, ContentType.ApplicationJSON);
+					Map<String,Object> data = new HashMap<>();
+					data.put("resources", resources);
+					data.put("authors", authors);
+					HashSet<String> fonts = new HashSet<>();
+					for (Font f : SwingUtil.FONTS) {
+						fonts.add(f.getName());
+					}
+					data.put("fonts", fonts);
+					header.content = prettyGson.toJson(data);
+					header.send(out);
+					done();
+					return;
+				}
 				if (path[0].equalsIgnoreCase("generator")) {
 					header.fields.put(HttpField.ContentType, ContentType.TextHTML);
 					header.send(out);
@@ -376,7 +411,7 @@ public class BannerMaker extends WebServer {
 					JPanel panel = new JPanel(layout);
 					int mw = 0;
 					for (Font f : SwingUtil.FONTS) {
-						JLabel label = new JLabel("<html>" + f.getName() + "</html>");
+						JLabel label = new JLabel(f.getName());
 						label.setFont(new Font(f.getName(), f.getStyle(), 30));
 						int w = label.getFontMetrics(label.getFont()).stringWidth(label.getText()) + 50;
 						mw = Math.max(mw, w);
@@ -412,6 +447,12 @@ public class BannerMaker extends WebServer {
 				if (path[0].equalsIgnoreCase("author")) {
 					if (path.length > 1) {
 						String authorID = path[1];
+						if (MemeGenerator.areYouKiddingMe(authorID)) {
+							header.send(out);
+							ImageIO.write(MemeGenerator.generate("Please use Author ID instead of Author Name",13), format, out);
+							done();
+							return;
+						}
 						ArrayList<SpigotResource> res = SpigotResource.byAuthor(authorID, sizeLimit, sortBy, sortOrder);
 						ArrayList<RoundRectBkg> imgs = new ArrayList<>();
 						if (sizeLimit > 0)
@@ -435,12 +476,24 @@ public class BannerMaker extends WebServer {
 						if (imgs.isEmpty()) {
 							imgs.add(noResource(new RoundRectBkg(bright), fontName));
 						}
+						authors.add(authorID);
 						JPanel j = SwingUtil.collect(imgs, width);
 						header.send(out);
 						ImageIO.write(SwingUtil.convert(j), format, out);
 						done();
 						return;
 					}
+				}
+				if (path[0].equalsIgnoreCase("meme")) {
+					File[] files = getFile("memes").listFiles();
+					File meme = files[ImageUtil.random.nextInt(files.length)];
+					String[] split = meme.getName().split("\\.");
+					format = split[split.length-1];
+					header.fields.put(HttpField.ContentType, "img/"+format);
+					header.send(out);
+					IOUtils.copy(new FileInputStream(meme), out);
+					done();
+					return;
 				}
 				if (path[0].equalsIgnoreCase("spiget")) {
 					SpigetStatus stats = SpigetStatus.getStatus();
@@ -472,14 +525,35 @@ public class BannerMaker extends WebServer {
 					done();
 					return;
 				}
+				if (path[0].equalsIgnoreCase("debug")) {
+					if (path.length > 1) {
+						Object throwable = null;
+						try {
+							throwable = Class.forName(path[1]).newInstance();
+						} catch (Throwable t) {
+						}
+						throw (Throwable)throwable;
+					}
+					throw new Error("Debug");
+				}
 				if (path[0].equalsIgnoreCase("resource")) {
 					if (path.length > 1) {
 						String resourceID = path[1];
+						if (MemeGenerator.areYouKiddingMe(resourceID)) {
+							header.send(out);
+							ImageIO.write(MemeGenerator.generate("Please use Resource ID instead of Resource Name",11), format, out);
+							done();
+							return;
+						}
 						SpigotResource resource = SpigotResource.getResource(resourceID);
+						if (truncate > 0) {
+							resource.name = resource.name.substring(0, Math.min(resource.name.length(), truncate));
+						}
 						RoundRectBkg img = new RoundRectBkg(bright);
-						if (resource != null)
+						if (resource != null) {
 							process(img, resource, fontName, subFont, defColor);
-						else {
+							resources.add(resourceID);
+						} else {
 							big(img, "Not Found :/", fontName);
 						}
 						if (width > 0) {
@@ -492,24 +566,31 @@ public class BannerMaker extends WebServer {
 					}
 				}
 			}
-			throw new RuntimeException();
 		} catch (RuntimeException io) {
+			io.printStackTrace();
 			RoundRectBkg img = new RoundRectBkg(bright);
 			if (defColor != null)
 				img.rate = defColor;
 			big(img, "Not Found :/", fontName);
 			header.send(out);
 			ImageIO.write(SwingUtil.convert(img), format, out);
+			done();
+			return;
 		} catch (Throwable t) {
 			t.printStackTrace();
 			RoundRectBkg img = new RoundRectBkg(bright);
 			if (defColor != null)
 				img.rate = defColor;
-			big(img, "Server Error :(", "?");
-			// img.setBounds(0,0,200,100);
+			big(img, t.toString(), fontName);
 			header.send(out);
 			ImageIO.write(SwingUtil.convert(img), format, out);
+			done();
+			return;
 		}
+		header.content = "<html><head><title>Unknown Route</title></head><body>Redirecting... <br>if it doesn't go to <br>"+HELP_THREAD+"</body><script>window.location = '"+HELP_THREAD+"'</script><html>";
+		header.fields.put(HttpField.ContentType, ContentType.TextHTML);
+		header.fields.put(HttpField.Location, HELP_THREAD);
+		header.send(out);
 		done();
 	}
 

@@ -66,7 +66,7 @@ public class SpigotResource {
 
 	public static SpigotResource getResource(String id) {
 		try {
-			URL url = new URL("https://nougat.api.spiget.org/v2/resources/" + id
+			URL url = new URL("https://api.spiget.org/v2/resources/" + id
 					+ "?fields=name,rating,downloads,icon,author,premium,currency,price");
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
@@ -76,13 +76,32 @@ public class SpigotResource {
 			while ((l = r.readLine()) != null)
 				b += l;
 			SpigotResource res = gson.fromJson(b, SpigotResource.class);
-			if (res.existenceStatus != 0) return null;
-			return res;
+			return confirmDeletion(res);
 		} catch (Throwable t) {
 
 		}
 		return null;
 	}
+	
+	public static SpigotResource confirmDeletion(SpigotResource res) {
+		try {
+			URL url = new URL("https://nougat.api.spiget.org/v2/resources/" + res.id);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
+			BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String l;
+			String b = new String();
+			while ((l = r.readLine()) != null)
+				b += l;
+			SpigotResource another = gson.fromJson(b, SpigotResource.class);
+			if (another.existenceStatus != 0) return null;
+			return res;
+		} catch (Throwable t) {
+			
+		}
+		return res;
+	}
+	
 	public int existenceStatus;
 	public boolean external;
 	public ResourceFile file;
