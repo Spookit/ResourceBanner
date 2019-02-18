@@ -12,25 +12,19 @@ import javax.swing.JPanel;
 
 public class ImageUtil {
 
-	public static final FileFilter IMAGES; 
+	public static final FileFilter IMAGES;
 	public static final Color[] COLORS = { g(178, 179, 253), g(166, 243, 157), g(248, 130, 129) };
 	public static final Random random = new Random();
-	
+
 	static {
-		IMAGES = new FileFilter() {
-			
-			@Override
-			public boolean accept(File arg0) {
-				return arg0 != null && (
-						arg0.getName().endsWith(".png") ||
-						arg0.getName().endsWith(".jpg") ||
-						arg0.getName().endsWith(".jpeg") ||
-						arg0.getName().endsWith(".gif") ||
-						arg0.getName().endsWith(".bmp") ||
-						arg0.getName().endsWith(".webm") 
-						);
-			}
-		};
+		IMAGES = file -> file != null && (
+                file.getName().endsWith(".png") ||
+                file.getName().endsWith(".jpg") ||
+                file.getName().endsWith(".jpeg") ||
+                file.getName().endsWith(".gif") ||
+                file.getName().endsWith(".bmp") ||
+                file.getName().endsWith(".webm")
+                );
 	}
 
 	public static Color brightColor() {
@@ -45,14 +39,6 @@ public class ImageUtil {
 		if (!colorStr.startsWith("#"))
 			colorStr = "#" + colorStr;
 		return Color.decode(colorStr);
-	}
-
-	static String limit(String x, int lim) {
-		lim -= 3;
-		if (x.length() > lim) {
-			x = x.substring(0, lim) + "...";
-		}
-		return x;
 	}
 
 	public static void main(String[] args) {
@@ -78,10 +64,6 @@ public class ImageUtil {
 
 	public static Color niceColor() {
 		return COLORS[random.nextInt(COLORS.length)];
-	}
-
-	public static Color random() {
-		return g(random.nextInt(255), random.nextInt(255), random.nextInt(255));
 	}
 
 }

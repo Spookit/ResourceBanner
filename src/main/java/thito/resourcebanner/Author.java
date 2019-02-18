@@ -15,17 +15,17 @@ public class Author {
 			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
 			BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
-			String b = new String();
+			StringBuilder builder = new StringBuilder();
 			while ((l = r.readLine()) != null)
-				b += l;
-			return SpigotResource.gson.fromJson(b, Author.class);
+				builder.append(l);
+			return SpigotResource.gson.fromJson(builder.toString(), Author.class);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
 		return null;
 	}
 
-	public static void main(String[] args) throws Throwable {
+	public static void main(String[] args) {
 		System.out.println(getAuthor("1").id);
 	}
 
