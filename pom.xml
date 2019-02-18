@@ -6,7 +6,7 @@
 
     <groupId>thito</groupId>
     <artifactId>resourcebanner</artifactId>
-    <version>1.6.7</version>
+    <version>1.7.0</version>
     <name>ResourceBanner</name>
 
     <properties>
