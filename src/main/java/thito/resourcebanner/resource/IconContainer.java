@@ -1,4 +1,4 @@
-package thito.resourcebanner;
+package thito.resourcebanner.resource;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

@@ -1,5 +1,7 @@
 package thito.resourcebanner;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -9,7 +11,6 @@ import org.spookit.betty.HttpField;
 
 public class Author {
   public String name;
-  public IconContainer icon;
   public long id;
 
   public static Author getAuthor(String id) {
@@ -23,7 +24,7 @@ public class Author {
       while ((l = r.readLine()) != null) {
         builder.append(l);
       }
-      return SpigotResource.gson.fromJson(builder.toString(), Author.class);
+      return new Gson().fromJson(builder.toString(), Author.class);
     } catch (Throwable t) {
       t.printStackTrace();
     }

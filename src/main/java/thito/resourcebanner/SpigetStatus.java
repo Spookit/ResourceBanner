@@ -1,5 +1,7 @@
 package thito.resourcebanner;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -22,7 +24,7 @@ public class SpigetStatus {
       while ((l = r.readLine()) != null) {
         builder.append(l);
       }
-      return SpigotResource.gson.fromJson(builder.toString(), SpigetStatus.class);
+      return new Gson().fromJson(builder.toString(), SpigetStatus.class);
     } catch (Throwable t) {
       throw new RuntimeException(t);
     }

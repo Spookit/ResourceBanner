@@ -40,6 +40,8 @@ import org.spookit.betty.Header;
 import org.spookit.betty.HttpField;
 import org.spookit.betty.WebServer;
 
+import thito.resourcebanner.handlers.SpigotResourceHandler;
+import thito.resourcebanner.resource.SpigotResource;
 import thito.resourcebanner.utils.Utils;
 
 public class BannerMaker extends WebServer {
@@ -57,13 +59,13 @@ public class BannerMaker extends WebServer {
   static long past = 0;
   static long performance;
   static RuntimeMXBean b = ManagementFactory.getRuntimeMXBean();
-
   static {
     SAVE = new Thread(() -> {
+      Gson gson = new Gson();
       try {
         config.setProperty("api-requests", REQUESTS + "");
-        config.setProperty("resources-requests", SpigotResource.gson.toJson(resources));
-        config.setProperty("authors-requests", SpigotResource.gson.toJson(authors));
+        config.setProperty("resources-requests", gson.toJson(resources));
+        config.setProperty("authors-requests", gson.toJson(authors));
         config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.6.7 by BlueObsidian");
       } catch (IOException e) {
         e.printStackTrace();
@@ -71,6 +73,8 @@ public class BannerMaker extends WebServer {
     });
     System.setProperty("http.agent", "");
   }
+
+  private SpigotResourceHandler spigotResourceHandler = new SpigotResourceHandler();
 
   public BannerMaker(int port) {
     super(port);
@@ -178,7 +182,7 @@ public class BannerMaker extends WebServer {
 
   public static RoundRectBkg process(RoundRectBkg img, SpigotResource resource, String headerFont, String fontName,
                                      Color col) {
-    resource.rating.average = roundToHalf(resource.rating.average);
+    resource.getRating().average = roundToHalf(resource.getRating().average);
     img.countBoth = false;
     if (col != null) {
       img.rate = col;
@@ -186,52 +190,52 @@ public class BannerMaker extends WebServer {
     if (fontName == null) {
       fontName = headerFont;
     }
-    if (resource.icon.data.isEmpty()) {
-      if (resource.premium) {
-        img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 15, 20);
+    if (resource.getIcon().data.isEmpty()) {
+      if (resource.isPremium()) {
+        img.addText(resource.getName(), new Font(headerFont, Font.BOLD, 13), 15, 20);
         img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 15, 35);
-        img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings",
+        img.addText(resource.getRating().average + "/" + resource.getRating().count + " Ratings",
             new Font(fontName, 0, 11), 95, 50);
         // RATINGS
-        img.setRatings(15, 39, 75, 13, resource.rating.average);
+        img.setRatings(15, 39, 75, 13, resource.getRating().average);
         img.addText("➜ ", new Font("?", 0, 11), 15, 65);
-        img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 30, 65);
+        img.addText(resource.getDownloads() + " Downloads", new Font(fontName, 0, 11), 30, 65);
         img.addText("❖ ", new Font("?", 0, 11), 15, 80);
-        img.addText(resource.price + " " + (resource.currency == null ? "USD" : resource.currency),
+        img.addText(resource.getPrice() + " " + (resource.getCurrency() == null ? "USD" : resource.getCurrency()),
             new Font(fontName, Font.BOLD, 13), 30, 80);
       } else {
-        img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 15, 25);
+        img.addText(resource.getName(), new Font(headerFont, Font.BOLD, 13), 15, 25);
         img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 15, 40);
-        img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings",
+        img.addText(resource.getRating().average + "/" + resource.getRating().count + " Ratings",
             new Font(fontName, 0, 11), 95, 55);
         // RATINGS
-        img.setRatings(15, 44, 75, 13, resource.rating.average);
+        img.setRatings(15, 44, 75, 13, resource.getRating().average);
         img.addText("➜ ", new Font("?", 0, 11), 15, 70);
-        img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 30, 70);
+        img.addText(resource.getDownloads() + " Downloads", new Font(fontName, 0, 11), 30, 70);
       }
     } else {
 
-      img.addImage(resource.icon.getResourceIcon(), 15, 15, 60, 60);
-      if (resource.premium) {
-        img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 90, 20);
+      img.addImage(resource.getIcon().getResourceIcon(), 15, 15, 60, 60);
+      if (resource.isPremium()) {
+        img.addText(resource.getName(), new Font(headerFont, Font.BOLD, 13), 90, 20);
         img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 90, 35);
-        img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings",
+        img.addText(resource.getRating().average + "/" + resource.getRating().count + " Ratings",
             new Font(fontName, 0, 11), 170, 50);
-        img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 105, 65);
-        img.addText(resource.price + " " + (resource.currency == null ? "USD" : resource.currency),
+        img.addText(resource.getDownloads() + " Downloads", new Font(fontName, 0, 11), 105, 65);
+        img.addText(resource.getPrice() + " " + (resource.getCurrency() == null ? "USD" : resource.getCurrency()),
             new Font(fontName, Font.BOLD, 13), 105, 80);
         // RATINGS
-        img.setRatings(90, 39, 75, 13, resource.rating.average);
+        img.setRatings(90, 39, 75, 13, resource.getRating().average);
         img.addText("➜ ", new Font("?", 0, 11), 90, 65);
         img.addText("❖ ", new Font("?", 0, 11), 90, 80);
       } else {
-        img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 90, 25);
+        img.addText(resource.getName(), new Font(headerFont, Font.BOLD, 13), 90, 25);
         img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 90, 40);
-        img.addText(resource.rating.average + "/" + resource.rating.count + " Ratings",
+        img.addText(resource.getRating().average + "/" + resource.getRating().count + " Ratings",
             new Font(fontName, 0, 11), 170, 55);
-        img.addText(resource.downloads + " Downloads", new Font(fontName, 0, 11), 105, 70);
+        img.addText(resource.getDownloads() + " Downloads", new Font(fontName, 0, 11), 105, 70);
         // RATINGS
-        img.setRatings(90, 44, 75, 13, resource.rating.average);
+        img.setRatings(90, 44, 75, 13, resource.getRating().average);
         img.addText("➜ ", new Font("?", 0, 11), 90, 70);
       }
     }
@@ -425,7 +429,7 @@ public class BannerMaker extends WebServer {
         if (path[0].equalsIgnoreCase("random")) {
           if (path.length > 1) {
             String authorID = path[1];
-            List<SpigotResource> res = SpigotResource.byAuthor(authorID, 10, sortBy, sortOrder);
+            List<SpigotResource> res = getSpigotResourceHandler().byAuthor(authorID, 10, sortBy, sortOrder);
             List<RoundRectBkg> imgs = new ArrayList<>();
             if (res.isEmpty()) {
               imgs.add(noResource(new RoundRectBkg(bright), fontName));
@@ -449,7 +453,7 @@ public class BannerMaker extends WebServer {
               done();
               return;
             }
-            List<SpigotResource> res = SpigotResource.byAuthor(authorID, sizeLimit, sortBy, sortOrder);
+            List<SpigotResource> res = getSpigotResourceHandler().byAuthor(authorID, sizeLimit, sortBy, sortOrder);
             List<RoundRectBkg> imgs = new ArrayList<>();
             if (sizeLimit > 0) {
               if (res.size() > sizeLimit && sizeLimit > 1) {
@@ -543,9 +547,9 @@ public class BannerMaker extends WebServer {
               done();
               return;
             }
-            SpigotResource resource = SpigotResource.getResource(resourceID);
+            SpigotResource resource = getSpigotResourceHandler().getResource(resourceID);
             if (truncate > 0) {
-              resource.name = resource.name.substring(0, Math.min(resource.name.length(), truncate));
+              resource.setName(resource.getName().substring(0, Math.min(resource.getName().length(), truncate)));
             }
             RoundRectBkg img = new RoundRectBkg(bright);
             if (resource != null) {
@@ -592,6 +596,10 @@ public class BannerMaker extends WebServer {
     header.fields.put(HttpField.Location, HELP_THREAD);
     header.send(out);
     done();
+  }
+
+  public SpigotResourceHandler getSpigotResourceHandler() {
+    return spigotResourceHandler;
   }
 
   private void addBigText(RoundRectBkg img, String text, String font) {
