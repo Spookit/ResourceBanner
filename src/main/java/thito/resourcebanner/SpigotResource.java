@@ -26,11 +26,11 @@ public class SpigotResource {
 			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
 			BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
-			String b = new String();
+			StringBuilder builder = new StringBuilder();
 			while ((l = r.readLine()) != null)
-				b += l;
+				builder.append(l);
 			ArrayList<SpigotResource> res = new ArrayList<>();
-			for (SpigotResource rx : gson.fromJson(b, SpigotResource[].class)) {
+			for (SpigotResource rx : gson.fromJson(builder.toString(), SpigotResource[].class)) {
 				rx = getResource(rx.id + "");
 				if (rx != null)
 					res.add(rx);
@@ -49,11 +49,11 @@ public class SpigotResource {
 			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
 			BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
-			String b = new String();
+			StringBuilder builder = new StringBuilder();
 			while ((l = r.readLine()) != null)
-				b += l;
+				builder.append(l);
 			ArrayList<SpigotResource> res = new ArrayList<>();
-			for (SpigotResource rx : gson.fromJson(b, SpigotResource[].class)) {
+			for (SpigotResource rx : gson.fromJson(builder.toString(), SpigotResource[].class)) {
 				rx = getResource(rx.id + "");
 				if (rx != null)
 					res.add(rx);
@@ -72,10 +72,10 @@ public class SpigotResource {
 			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
 			BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
-			String b = new String();
+			StringBuilder builder = new StringBuilder();
 			while ((l = r.readLine()) != null)
-				b += l;
-			SpigotResource res = gson.fromJson(b, SpigotResource.class);
+				builder.append(l);
+			SpigotResource res = gson.fromJson(builder.toString(), SpigotResource.class);
 			return confirmDeletion(res);
 		} catch (Throwable t) {
 
@@ -90,10 +90,10 @@ public class SpigotResource {
 			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
 			BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
-			String b = new String();
+			StringBuilder builder = new StringBuilder();
 			while ((l = r.readLine()) != null)
-				b += l;
-			SpigotResource another = gson.fromJson(b, SpigotResource.class);
+				builder.append(l);
+			SpigotResource another = gson.fromJson(builder.toString(), SpigotResource.class);
 			if (another.existenceStatus != 0) return null;
 			return res;
 		} catch (Throwable t) {

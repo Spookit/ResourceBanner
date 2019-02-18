@@ -66,10 +66,10 @@ public class SpigetStatus {
 			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
 			BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
-			String b = new String();
+			StringBuilder builder = new StringBuilder();
 			while ((l = r.readLine()) != null)
-				b += l;
-			return SpigotResource.gson.fromJson(b, SpigetStatus.class);
+				builder.append(l);
+			return SpigotResource.gson.fromJson(builder.toString(), SpigetStatus.class);
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		}

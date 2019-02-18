@@ -2,7 +2,6 @@ package thito.resourcebanner;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.io.File;
 import java.io.FileFilter;
 import java.util.Random;
 
@@ -53,9 +52,7 @@ public class ImageUtil {
 					+ shower.getBackground().getBlue() + "),");
 			shower.setBackground(brightColor());
 		});
-		next.addActionListener(a -> {
-			shower.setBackground(brightColor());
-		});
+		next.addActionListener(a -> shower.setBackground(brightColor()));
 		frame.add(shower, BorderLayout.CENTER);
 		frame.add(next, BorderLayout.WEST);
 		frame.add(butt, BorderLayout.EAST);

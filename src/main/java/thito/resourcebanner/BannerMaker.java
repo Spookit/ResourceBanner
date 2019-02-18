@@ -56,19 +56,16 @@ public class BannerMaker extends WebServer {
 	static RuntimeMXBean b = ManagementFactory.getRuntimeMXBean();
 
 	static {
-		SAVE = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					config.setProperty("api-requests", REQUESTS + "");
-					config.setProperty("resources-requests", SpigotResource.gson.toJson(resources));
-					config.setProperty("authors-requests", SpigotResource.gson.toJson(authors));
-					config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.6.7 by BlueObsidian");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		SAVE = new Thread(() -> {
+            try {
+                config.setProperty("api-requests", REQUESTS + "");
+                config.setProperty("resources-requests", SpigotResource.gson.toJson(resources));
+                config.setProperty("authors-requests", SpigotResource.gson.toJson(authors));
+                config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.6.7 by BlueObsidian");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 		System.setProperty("http.agent", "");
 	}
 
@@ -126,12 +123,7 @@ public class BannerMaker extends WebServer {
 			config.load(new FileReader(getFile("/config.properties")));
 			REQUESTS = Integer.parseInt(config.getProperty("api-requests"));
 			Runtime.getRuntime().addShutdownHook(SAVE);
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				@Override
-				public void run() {
-					System.out.println("Shutting down server...");
-				}
-			});
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("Shutting down server...")));
 		} catch (Throwable t) {
 			System.out.println("Failed to load configuration");
 			t.printStackTrace();
@@ -322,7 +314,7 @@ public class BannerMaker extends WebServer {
 		}
 		String format = supportedTypes[defaultType];
 		if (path.length > 0) {
-			String f[] = path[path.length - 1].split("\\.", 2);
+            String[] f = path[path.length - 1].split("\\.", 2);
 			if (f.length >= 2) {
 				format = f[1].toLowerCase();
 				path[path.length - 1] = f[0];

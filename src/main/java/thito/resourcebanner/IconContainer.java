@@ -1,9 +1,8 @@
 package thito.resourcebanner;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 
@@ -25,7 +24,7 @@ public class IconContainer {
 		if (icon == null)
 			return null;
 		Decoder decoder = Base64.getDecoder();
-		byte[] x = decoder.decode(icon.getBytes("UTF-8"));
+		byte[] x = decoder.decode(icon.getBytes(StandardCharsets.UTF_8));
 		return ImageIO.read(new ByteArrayInputStream(x));
 	}
 }
