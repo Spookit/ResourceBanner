@@ -1,21 +1,26 @@
 # ResourceBanner
 A simple banner generator for spigot resources and authors<br>
-![alt text](https://banners.plajer.xyz/status/stats.png?width=800)
+![Server status](https://banners.plajer.xyz/status/stats.png?width=400)
 
 # Usage
-<strong>Resource</strong>
+## Get Resource
 https://banners.plajer.xyz/resource/resourceID.png<br>
 <i>Example: https://banners.plajer.xyz/resource/9661.png</i><br>
-![alt text](https://banners.plajer.xyz/resource/9661/banner.png?width=400)
+![Resource usage](https://banners.plajer.xyz/resource/9661/banner.png?width=400)
   
-<strong>Resource List</strong>
+## Get Resources List
 https://banners.plajer.xyz/author/authorID.png<br>
 <i>Example: https://banners.plajer.xyz/author/1.png</i><br>
-![alt text](https://banners.plajer.xyz/author/1/banner.png?width=1200)
+![Resource list usage](https://banners.plajer.xyz/author/1/banner.png?width=1200)
+
+## Get Random Resource from Author
+https://banners.plajer.xyz/random/authorID.png<br>
+<i>Example: https://banners.plajer.xyz/random/1.png</i><br>
+![Resource list usage](https://banners.plajer.xyz/random/1.png?width=400)
   
-# Generator
+# Generate Your Own Banner
 You can use the banner generator to generate resource banner easily.
 https://banners.plajer.xyz/generator
 
-# Font List
-![alt text](https://banners.plajer.xyz/fonts/f.png)
+# Fonts List
+![Valid fonts](https://banners.plajer.xyz/fonts/f.png)
