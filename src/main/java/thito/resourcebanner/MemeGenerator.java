@@ -16,20 +16,11 @@ public class MemeGenerator {
 
   public static final int SIZE = 400;
 
-  public static boolean areYouKiddingMe(String x) {
-    try {
-      Integer.parseInt(x);
-      return false;
-    } catch (Throwable t) {
-      return true;
-    }
-  }
-
   public static BufferedImage generate(String additionalCaption, int fontSize) throws IOException {
-    return additionalCaption == null ? loadRandomly() : addCaption(loadRandomly(), additionalCaption, fontSize);
+    return additionalCaption == null ? loadRandomMeme() : addCaption(loadRandomMeme(), additionalCaption, fontSize);
   }
 
-  private static BufferedImage loadRandomly() throws IOException {
+  private static BufferedImage loadRandomMeme() throws IOException {
     File memeFolder = BannerMaker.getFile("memes");
       if (!memeFolder.exists()) {
           memeFolder.mkdirs();

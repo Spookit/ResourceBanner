@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.spookit.betty.HttpField;
@@ -44,7 +45,7 @@ public class SpigotResource {
   public IconContainer icon;
   Author au = null;
 
-  public static ArrayList<SpigotResource> byAuthor(String id, int limit, Sort.SortType type, Sort.SortDirection order) {
+  public static List<SpigotResource> byAuthor(String id, int limit, Sort.SortType type, Sort.SortDirection order) {
     try {
       limit++;
       URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?fields=id&size=" + limit
@@ -67,31 +68,6 @@ public class SpigotResource {
       return res;
     } catch (Throwable t) {
       return new ArrayList<>();
-    }
-  }
-
-  public static ArrayList<SpigotResource> byAuthor(String id, Sort.SortDirection order, Sort.SortType type) {
-    try {
-      URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?fields=id&sort="
-          + Sort.toString(type, order));
-      HttpURLConnection con = (HttpURLConnection) url.openConnection();
-      con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
-      BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
-      String l;
-      StringBuilder builder = new StringBuilder();
-      while ((l = r.readLine()) != null) {
-        builder.append(l);
-      }
-      ArrayList<SpigotResource> res = new ArrayList<>();
-      for (SpigotResource rx : gson.fromJson(builder.toString(), SpigotResource[].class)) {
-        rx = getResource(rx.id + "");
-        if (rx != null) {
-          res.add(rx);
-        }
-      }
-      return res;
-    } catch (Throwable t) {
-      throw new RuntimeException(t);
     }
   }
 

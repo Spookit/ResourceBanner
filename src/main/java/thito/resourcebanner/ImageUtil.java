@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 public class ImageUtil {
 
   public static final FileFilter IMAGES;
-  public static final Color[] COLORS = {g(178, 179, 253), g(166, 243, 157), g(248, 130, 129)};
+  public static final Color[] COLORS = {new Color(178, 179, 253), new Color(166, 243, 157), new Color(248, 130, 129)};
   public static final Random random = new Random();
 
   static {
@@ -26,15 +26,11 @@ public class ImageUtil {
     );
   }
 
-  public static Color brightColor() {
-    return g(125 + random.nextInt(130), 125 + random.nextInt(130), 125 + random.nextInt(130));
+  public static Color getBrightColor() {
+    return new Color(125 + random.nextInt(130), 125 + random.nextInt(130), 125 + random.nextInt(130));
   }
 
-  static Color g(int r, int g, int b) {
-    return new Color(r, g, b);
-  }
-
-  public static Color hex2Rgb(String colorStr) {
+  public static Color hexToRgb(String colorStr) {
       if (!colorStr.startsWith("#")) {
           colorStr = "#" + colorStr;
       }
@@ -47,20 +43,20 @@ public class ImageUtil {
     JButton butt = new JButton("i love it");
     JButton next = new JButton("meh, NEXT!");
     JPanel shower = new JPanel();
-    shower.setBackground(brightColor());
+    shower.setBackground(getBrightColor());
     butt.addActionListener(a -> {
       System.out.println("g(" + shower.getBackground().getRed() + "," + shower.getBackground().getGreen() + ","
           + shower.getBackground().getBlue() + "),");
-      shower.setBackground(brightColor());
+      shower.setBackground(getBrightColor());
     });
-    next.addActionListener(a -> shower.setBackground(brightColor()));
+    next.addActionListener(a -> shower.setBackground(getBrightColor()));
     frame.add(shower, BorderLayout.CENTER);
     frame.add(next, BorderLayout.WEST);
     frame.add(butt, BorderLayout.EAST);
     frame.setVisible(true);
   }
 
-  public static Color niceColor() {
+  public static Color getNiceColor() {
     return COLORS[random.nextInt(COLORS.length)];
   }
 

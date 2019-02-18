@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
@@ -38,6 +39,8 @@ import org.spookit.betty.ContentType;
 import org.spookit.betty.Header;
 import org.spookit.betty.HttpField;
 import org.spookit.betty.WebServer;
+
+import thito.resourcebanner.utils.Utils;
 
 public class BannerMaker extends WebServer {
 
@@ -71,11 +74,6 @@ public class BannerMaker extends WebServer {
 
   public BannerMaker(int port) {
     super(port);
-  }
-
-  public static RoundRectBkg big(RoundRectBkg img, String text, String font) {
-    img.addText(text, new Font(font, Font.BOLD, 24), 25, 55);
-    return img;
   }
 
   public static void dispatchCommand(String cmd) {
@@ -141,6 +139,19 @@ public class BannerMaker extends WebServer {
       } catch (Throwable t) {
       }
     }
+    loadFonts();
+    System.out.println("Starting server on port " + port + "...");
+    new BannerMaker(port).disableLogging().start();
+    System.out.println("Server has been started");
+    Scanner scan = new Scanner(System.in);
+    while (Thread.currentThread().isAlive()) {
+      String line = scan.nextLine().toLowerCase();
+      dispatchCommand(line);
+    }
+    scan.close();
+  }
+
+  private static void loadFonts() {
     System.out.println("Loading fonts...");
     File fontDir = getFile("fonts");
     if (!fontDir.exists()) {
@@ -158,15 +169,6 @@ public class BannerMaker extends WebServer {
         }
       }
     }
-    System.out.println("Starting server on port " + port + "...");
-    new BannerMaker(port).disableLogging().start();
-    System.out.println("Server has been started");
-    Scanner scan = new Scanner(System.in);
-    while (Thread.currentThread().isAlive()) {
-      String line = scan.nextLine().toLowerCase();
-      dispatchCommand(line);
-    }
-    scan.close();
   }
 
   public static RoundRectBkg noResource(RoundRectBkg img, String font) {
@@ -209,7 +211,7 @@ public class BannerMaker extends WebServer {
       }
     } else {
 
-      img.addImage(resource.icon.get(), 15, 15, 60, 60);
+      img.addImage(resource.icon.getResourceIcon(), 15, 15, 60, 60);
       if (resource.premium) {
         img.addText(resource.name, new Font(headerFont, Font.BOLD, 13), 90, 20);
         img.addText("by " + resource.getAuthor().name, new Font(fontName, 0, 11), 90, 35);
@@ -244,15 +246,11 @@ public class BannerMaker extends WebServer {
     return img;
   }
 
-  public static <T extends Enum<T>> T random(Class<T> e) {
-    return e.getEnumConstants()[ImageUtil.random.nextInt(e.getEnumConstants().length)];
-  }
-
   public static double roundToHalf(double d) {
     return Math.round(d * 2) / 2.0;
   }
 
-  public static RoundRectBkg stats(RoundRectBkg img, String font, String subFont) {
+  public static RoundRectBkg showStatsImage(RoundRectBkg img, String font, String subFont) {
     img.setSize(img.getWidth(), 160);
     Runtime runtime = Runtime.getRuntime();
     double maxMem = runtime.maxMemory() / (1024.0 * 1024.0);
@@ -356,9 +354,9 @@ public class BannerMaker extends WebServer {
     }
     Color defColor = null;
     if (props.containsKey("color")) {
-      defColor = ImageUtil.hex2Rgb(props.getProperty("color"));
+      defColor = ImageUtil.hexToRgb(props.getProperty("color"));
     } else if (props.containsKey("nicecolor") && Boolean.getBoolean(props.getProperty("nicecolor"))) {
-      defColor = ImageUtil.niceColor();
+      defColor = ImageUtil.getNiceColor();
     }
     if (props.containsKey("size")) {
       try {
@@ -427,8 +425,8 @@ public class BannerMaker extends WebServer {
         if (path[0].equalsIgnoreCase("random")) {
           if (path.length > 1) {
             String authorID = path[1];
-            ArrayList<SpigotResource> res = SpigotResource.byAuthor(authorID, 10, sortBy, sortOrder);
-            ArrayList<RoundRectBkg> imgs = new ArrayList<>();
+            List<SpigotResource> res = SpigotResource.byAuthor(authorID, 10, sortBy, sortOrder);
+            List<RoundRectBkg> imgs = new ArrayList<>();
             if (res.isEmpty()) {
               imgs.add(noResource(new RoundRectBkg(bright), fontName));
             } else {
@@ -445,14 +443,14 @@ public class BannerMaker extends WebServer {
         if (path[0].equalsIgnoreCase("author")) {
           if (path.length > 1) {
             String authorID = path[1];
-            if (MemeGenerator.areYouKiddingMe(authorID)) {
+            if (!Utils.isInteger(authorID)) {
               header.send(out);
               ImageIO.write(MemeGenerator.generate("Please use Author ID instead of Author Name", 13), format, out);
               done();
               return;
             }
-            ArrayList<SpigotResource> res = SpigotResource.byAuthor(authorID, sizeLimit, sortBy, sortOrder);
-            ArrayList<RoundRectBkg> imgs = new ArrayList<>();
+            List<SpigotResource> res = SpigotResource.byAuthor(authorID, sizeLimit, sortBy, sortOrder);
+            List<RoundRectBkg> imgs = new ArrayList<>();
             if (sizeLimit > 0) {
               if (res.size() > sizeLimit && sizeLimit > 1) {
                 for (int i = 0; i < sizeLimit - 1; i++) {
@@ -516,7 +514,7 @@ public class BannerMaker extends WebServer {
         if (path[0].equalsIgnoreCase("stats") || path[0].equalsIgnoreCase("status")
             || path[0].equalsIgnoreCase("stat")) {
           RoundRectBkg img = new RoundRectBkg(bright);
-          stats(img, fontName, subFont);
+          showStatsImage(img, fontName, subFont);
           if (width > 0) {
             img.setSize(width, img.getHeight());
           }
@@ -539,7 +537,7 @@ public class BannerMaker extends WebServer {
         if (path[0].equalsIgnoreCase("resource")) {
           if (path.length > 1) {
             String resourceID = path[1];
-            if (MemeGenerator.areYouKiddingMe(resourceID)) {
+            if (!Utils.isInteger(resourceID)) {
               header.send(out);
               ImageIO.write(MemeGenerator.generate("Please use Resource ID instead of Resource Name", 11), format, out);
               done();
@@ -554,7 +552,7 @@ public class BannerMaker extends WebServer {
               process(img, resource, fontName, subFont, defColor);
               resources.add(resourceID);
             } else {
-              big(img, "Not Found :/", fontName);
+              addBigText(img, "Not Found :/", fontName);
             }
             if (width > 0) {
               img.setSize(width, img.getHeight());
@@ -572,7 +570,7 @@ public class BannerMaker extends WebServer {
       if (defColor != null) {
         img.rate = defColor;
       }
-      big(img, "Not Found :/", fontName);
+      addBigText(img, "Not Found :/", fontName);
       header.send(out);
       ImageIO.write(SwingUtil.convert(img), format, out);
       done();
@@ -583,7 +581,7 @@ public class BannerMaker extends WebServer {
       if (defColor != null) {
         img.rate = defColor;
       }
-      big(img, t.toString(), fontName);
+      addBigText(img, t.toString(), fontName);
       header.send(out);
       ImageIO.write(SwingUtil.convert(img), format, out);
       done();
@@ -594,6 +592,10 @@ public class BannerMaker extends WebServer {
     header.fields.put(HttpField.Location, HELP_THREAD);
     header.send(out);
     done();
+  }
+
+  private void addBigText(RoundRectBkg img, String text, String font) {
+    img.addText(text, new Font(font, Font.BOLD, 24), 25, 55);
   }
 
 }

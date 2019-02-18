@@ -11,9 +11,11 @@ import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 public class RoundRectBkg extends JPanel {
@@ -42,10 +44,6 @@ public class RoundRectBkg extends JPanel {
   private static int getBrightness(Color c) {
     return (int) Math.sqrt(
         c.getRed() * c.getRed() * .241 + c.getGreen() * c.getGreen() * .691 + c.getBlue() * c.getBlue() * .068);
-  }
-
-  public static int perc(double x, double max) {
-    return Double.valueOf(x / max).intValue();
   }
 
   public static Color x(Color color) {
@@ -93,7 +91,7 @@ public class RoundRectBkg extends JPanel {
           this);
     }
     if (r != null) {
-      StarWars.createRatings(g, r, av);
+      applyResourceRatingStars(g, r, av);
     }
   }
 
@@ -101,4 +99,37 @@ public class RoundRectBkg extends JPanel {
     r = new Rectangle(x, y, w, h);
     av = average;
   }
+
+  private void applyResourceRatingStars(Graphics g, Rectangle bound, double average) {
+    double gap = (bound.width / 100D) * 2;
+    bound.width -= gap;
+    int width = bound.width / 5;
+    for (int i = 0; i < 5; i++) {
+      if (average >= 1) {
+        average -= 1;
+        try {
+          g.drawImage(ImageIO.read(BannerMaker.getResource("star.png")), bound.x + (((int) gap + width) * i),
+              bound.y, width, bound.height, null);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      } else if (average >= 0.5) {
+        average -= 0.5;
+        try {
+          g.drawImage(ImageIO.read(BannerMaker.getResource("star_half.png")),
+              bound.x + (((int) gap + width) * i), bound.y, width, bound.height, null);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      } else if (average < 0.5) {
+        try {
+          g.drawImage(ImageIO.read(BannerMaker.getResource("star_off.png")),
+              bound.x + (((int) gap + width) * i), bound.y, width, bound.height, null);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
+
 }

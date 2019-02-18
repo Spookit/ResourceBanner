@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 
 public class SwingUtil {
 
-  static ArrayList<Font> FONTS = new ArrayList<>();
+  static List<Font> FONTS = new ArrayList<>();
 
   public static JPanel collect(List<RoundRectBkg> imgs, int customizedWidth) {
     int width = 600;
