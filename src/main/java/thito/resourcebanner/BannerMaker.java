@@ -172,14 +172,14 @@ public class BannerMaker extends WebServer {
     }
   }
 
-  public static RoundRectBkg noResource(RoundRectBkg img, String font) {
+  public static RectBkg noResource(RectBkg img, String font) {
     img.addText("No Resource", new Font(font, Font.BOLD, 24), 25, 55);
     return img;
   }
 
-  public static RoundRectBkg process(RoundRectBkg img, SpigotResource resource, String headerFont, String fontName, Color color) {
+  public static RectBkg process(RectBkg img, SpigotResource resource, String headerFont, String fontName, Color color) {
     resource.getRating().average = roundToHalf(resource.getRating().average);
-    img.countBoth = false;
+    img.setCountBoth(false);
     if (color != null) {
       img.setRate(color);
     }
@@ -238,7 +238,7 @@ public class BannerMaker extends WebServer {
     return img;
   }
 
-  public static RoundRectBkg process(RoundRectBkg img, String font, Color color) {
+  public static RectBkg process(RectBkg img, String font, Color color) {
     if (color != null) {
       img.setRate(color);
     }
@@ -250,7 +250,7 @@ public class BannerMaker extends WebServer {
     return Math.round(d * 2) / 2.0;
   }
 
-  public static RoundRectBkg showStatsImage(RoundRectBkg img, String font, String subFont) {
+  public static RectBkg showStatsImage(RectBkg img, String font, String subFont) {
     img.setSize(img.getWidth(), 160);
     Runtime runtime = Runtime.getRuntime();
     double maxMem = runtime.maxMemory() / (1024.0 * 1024.0);
@@ -355,6 +355,12 @@ public class BannerMaker extends WebServer {
     if (props.containsKey("size") && Utils.isInteger(props.getProperty("size"))) {
       sizeLimit = Integer.parseInt(props.getProperty("size"));
     }
+    boolean rounded = true;
+    if (props.containsKey("type")) {
+      if (props.getProperty("D").equalsIgnoreCase("flat")) {
+        rounded = false;
+      }
+    }
     // TAK SEMUDAH ITU FERGUSO >:)
     if (sizeLimit > 50) {
       sizeLimit = 50;
@@ -417,11 +423,13 @@ public class BannerMaker extends WebServer {
           if (path.length > 1) {
             String authorID = path[1];
             List<SpigotResource> res = getSpigotResourceHandler().byAuthor(authorID, 10, sortBy, sortOrder);
-            List<RoundRectBkg> imgs = new ArrayList<>();
+            List<RectBkg> imgs = new ArrayList<>();
             if (res.isEmpty()) {
-              imgs.add(noResource(new RoundRectBkg(bright), fontName));
+              imgs.add(noResource(new RectBkg(bright), fontName));
             } else {
-              imgs.add(process(new RoundRectBkg(bright), res.get(ImageUtil.random.nextInt(res.size())),
+              RectBkg rect = new RectBkg(bright);
+              rect.setRounded(rounded);
+              imgs.add(process(rect, res.get(ImageUtil.random.nextInt(res.size())),
                   fontName, subFont, defColor));
             }
             JPanel j = SwingUtil.collect(imgs, width);
@@ -441,7 +449,7 @@ public class BannerMaker extends WebServer {
               return;
             }
             List<SpigotResource> res = getSpigotResourceHandler().byAuthor(authorID, sizeLimit, sortBy, sortOrder);
-            List<RoundRectBkg> imgs = new ArrayList<>();
+            List<RectBkg> imgs = new ArrayList<>();
             if (sizeLimit > 0) {
               int resourcesLimit = sizeLimit;
               if (res.size() < resourcesLimit) {
@@ -451,12 +459,14 @@ public class BannerMaker extends WebServer {
                 if (resourcesLimit == 0) {
                   break;
                 }
-                imgs.add(process(new RoundRectBkg(bright), r, fontName, subFont, defColor));
+                RectBkg rect = new RectBkg(bright);
+                rect.setRounded(rounded);
+                imgs.add(process(rect, r, fontName, subFont, defColor));
                 resourcesLimit--;
               }
             }
             if (imgs.isEmpty()) {
-              imgs.add(noResource(new RoundRectBkg(bright), fontName));
+              imgs.add(noResource(new RectBkg(bright), fontName));
             }
             cachedAuthors.add(authorID);
             JPanel j = SwingUtil.collect(imgs, width);
@@ -479,7 +489,7 @@ public class BannerMaker extends WebServer {
         }
         if (path[0].equalsIgnoreCase("spiget")) {
           SpigetStatus stats = SpigetStatus.getSpigetStatus();
-          RoundRectBkg img = new RoundRectBkg(bright);
+          RectBkg img = new RectBkg(bright);
           if (defColor != null) {
             img.setRate(defColor);
           }
@@ -498,7 +508,7 @@ public class BannerMaker extends WebServer {
         }
         if (path[0].equalsIgnoreCase("stats") || path[0].equalsIgnoreCase("status")
             || path[0].equalsIgnoreCase("stat")) {
-          RoundRectBkg img = new RoundRectBkg(bright);
+          RectBkg img = new RectBkg(bright);
           showStatsImage(img, fontName, subFont);
           if (width > 0) {
             img.setSize(width, img.getHeight());
@@ -521,7 +531,8 @@ public class BannerMaker extends WebServer {
             if (truncate > 0) {
               resource.setName(resource.getName().substring(0, Math.min(resource.getName().length(), truncate)));
             }
-            RoundRectBkg img = new RoundRectBkg(bright);
+            RectBkg img = new RectBkg(bright);
+            img.setRounded(rounded);
             if (resource != null) {
               process(img, resource, fontName, subFont, defColor);
               cachedResources.add(resourceID);
@@ -540,7 +551,7 @@ public class BannerMaker extends WebServer {
       }
     } catch (RuntimeException io) {
       io.printStackTrace();
-      RoundRectBkg img = new RoundRectBkg(bright);
+      RectBkg img = new RectBkg(bright);
       if (defColor != null) {
         img.setRate(defColor);
       }
@@ -551,7 +562,7 @@ public class BannerMaker extends WebServer {
       return;
     } catch (Throwable t) {
       t.printStackTrace();
-      RoundRectBkg img = new RoundRectBkg(bright);
+      RectBkg img = new RectBkg(bright);
       if (defColor != null) {
         img.setRate(defColor);
       }
@@ -576,7 +587,7 @@ public class BannerMaker extends WebServer {
     return spigotResourceHandler;
   }
 
-  private void addBigText(RoundRectBkg img, String text, String font) {
+  private void addBigText(RectBkg img, String text, String font) {
     img.addText(text, new Font(font, Font.BOLD, 24), 25, 55);
   }
 

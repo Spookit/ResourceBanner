@@ -15,13 +15,13 @@ public class SwingUtil {
 
   static List<Font> FONTS = new ArrayList<>();
 
-  public static JPanel collect(List<RoundRectBkg> imgs, int customizedWidth) {
+  public static JPanel collect(List<RectBkg> imgs, int customizedWidth) {
     int width = 600;
     if (customizedWidth <= 0) {
       for (int i = 0; i < imgs.size(); i += 3) {
         int w = 0;
         for (int a = 0; a < 3 && a + i < imgs.size(); a++) {
-          RoundRectBkg im = imgs.get(a + i);
+          RectBkg im = imgs.get(a + i);
           w += im.getWidth();
         }
         width = Math.max(width, w);
@@ -36,7 +36,7 @@ public class SwingUtil {
     JPanel panel = new JPanel(layout);
     panel.setBounds(0, 0, width, 100);
     panel.setOpaque(false);
-    for (RoundRectBkg i : imgs) {
+    for (RectBkg i : imgs) {
       i.setPreferredSize(i.getSize());
       panel.add(i);
     }

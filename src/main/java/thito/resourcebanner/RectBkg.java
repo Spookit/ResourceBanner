@@ -19,24 +19,29 @@ import java.util.Map.Entry;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-public class RoundRectBkg extends JPanel {
+public class RectBkg extends JPanel {
 
   private static final long serialVersionUID = 1L;
   private static final FontRenderContext frc = new FontRenderContext(null, true, true);
   private Color rate;
   private Map<TextLayout, Point> texts = new HashMap<>();
   private Map<BufferedImage, Rectangle> image = new HashMap<>();
+  private boolean rounded = true;
   private Rectangle rectangle;
   private double average;
-  boolean countBoth = true;
+  private boolean countBoth = true;
 
-  public RoundRectBkg(Boolean bright) {
+  public RectBkg(Boolean bright) {
     rate = new Color(
         bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0),
         bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0),
         bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0));
     setBounds(0, 0, 50, 100);
     setSize(50, 100);
+  }
+
+  public void setCountBoth(boolean countBoth) {
+    this.countBoth = countBoth;
   }
 
   private static int getBrightness(Color c) {
@@ -50,6 +55,10 @@ public class RoundRectBkg extends JPanel {
     } else {
       return color.darker().darker().darker();
     }
+  }
+
+  public void setRounded(boolean rounded) {
+    this.rounded = rounded;
   }
 
   public void addImage(BufferedImage img, int x, int y, int w, int h) {
@@ -75,9 +84,15 @@ public class RoundRectBkg extends JPanel {
       g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     }
     g.setColor(rate.darker());
-    g.fillRoundRect(0, 8, getWidth(), getHeight() - 8, 25, 25);
+    if (rounded) {
+      g.fillRoundRect(0, 8, getWidth(), getHeight() - 8, 25, 25);
+    }
     g.setColor(rate);
-    g.fillRoundRect(0, 0, getWidth(), getHeight() - 8, 25, 25);
+    if (rounded) {
+      g.fillRoundRect(0, 0, getWidth(), getHeight() - 8, 25, 25);
+    } else {
+      g.fillRect(0, 0, getWidth(), getHeight() - 8);
+    }
     g.setColor(x(rate));
     if (g instanceof Graphics2D) {
       for (Entry<TextLayout, Point> t : texts.entrySet()) {
