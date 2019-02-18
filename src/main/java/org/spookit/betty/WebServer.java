@@ -101,7 +101,7 @@ public abstract class WebServer {
               sock.close();
             } catch (Throwable t) {
               if (log) {
-                Handle.Throw(t);
+                t.printStackTrace();
               }
             }
           }).start();
