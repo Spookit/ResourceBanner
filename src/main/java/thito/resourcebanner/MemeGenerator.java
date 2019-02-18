@@ -14,7 +14,7 @@ import javax.swing.SwingConstants;
 
 public class MemeGenerator {
 
-  public static int SIZE = 400;
+  public static final int SIZE = 400;
 
   public static boolean areYouKiddingMe(String x) {
     try {

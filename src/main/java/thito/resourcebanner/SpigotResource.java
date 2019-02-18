@@ -18,7 +18,6 @@ public class SpigotResource {
   static final Map<String, String> cookies = new HashMap<>();
   public int existenceStatus;
   public boolean external;
-  public ResourceFile file;
   public String description;
   public String contributors;
   public int likes;
