@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <title>Resource banners generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.9/css/mdb.min.css" rel="stylesheet">
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+</head>
+<style>
+    .centered {
+        float: none;
+        margin: 0 auto;
+    }
+
+    .no-overlay:focus, .no-overlay:active {
+        outline: none !important;
+        box-shadow: none;
+    }
+</style>
+<body class="bg-light text-center">
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-10">
+            <div class="jumbotron mt-3">
+                <h1 class="h1-responsive">Resource Banner Generator</h1>
+                <h4 class="text-muted h4-responsive">Created by BlueObsidian</h4>
+            </div>
+        </div>
+        <div class="col-lg-5 col-md-6 col-12">
+            <form>
+                <fieldset id="reso_field">
+                    <h3>RESOURCE BADGE</h3>
+                    <div class="form-group">
+                        <label for="reso_id">Resource ID <strong>(required)</strong></label>
+                        <input class="form-control col-lg-3 col-md-4 col-7 centered" type="text" id="reso_id" autocomplete="false"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="reso_brightness">Brightness style</label>
+                        <select class="form-control col-lg-3 col-md-4 col-7" style="float: none; margin: 0 auto;" id="reso_brightness">
+                            <option value="rand">Random</option>
+                            <option value="cream">Cream color</option>
+                            <option value="choco">Chocolate color</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reso_width">Width</label>
+                        <input class="form-control col-lg-3 col-md-4 col-7 centered" type="number" id="reso_width"
+                               onKeyPress="if(this.value.length>=4) return false;"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="reso_color">Background color</label>
+                        <div class="row justify-content-center">
+                            <div id="reso_color_div" class="col-lg-2 col-md-3 col-4" hidden>
+                                <input class="form-control centered no-overlay" type="color" id="reso_color" hidden>
+                                Select color
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-4">
+                                <input class="form-control centered no-overlay" type="checkbox" checked id="reso_random"
+                                       onclick="document.getElementById('reso_color').hidden = checked; document.getElementById('reso_color_div').hidden = checked">
+                                Randomize
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-4 col-md-5 col-8">
+                            <div class="form-group">
+                                <label for="reso_font">Font</label>
+                                <input class="form-control col-11 centered" type="text" id="reso_font" list="font"/>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-5 col-8">
+                            <div class="form-group">
+                                <label for="reso_subfont">Subfont</label>
+                                <input class="form-control col-11 centered" type="text" id="reso_subfont" list="font"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reso_format">Image format</label>
+                        <select class="form-control col-lg-7 col-md-8 col-11 centered" id="reso_format">
+                            <option value="png">Portable Network Graphics (PNG) (Recommended)</option>
+                            <option value="jpg">Joint Photographic Experts Group (JPEG) (Worse quality)</option>
+                        </select>
+                    </div>
+                    <button type="button" onclick="generateReso();">Generate</button>
+                    <button type="button" onclick="copyText('linkreso');">Copy</button>
+                    <div class="row">
+                        <div class="col-lg-5 col-md-7 col-12">
+                            <div class="form-group">
+                                <label for="linkreso">Output:</label>
+                                <textarea class="form-control" rows="3" id="linkreso" disabled></textarea>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-8 col-12">
+                            <label for="reso_frame">Image:</label>
+                            <div class="form-group embed-responsive embed-responsive-21by9 white">
+                                <iframe id="reso_frame"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+        <div class="col-lg-5 col-md-6 col-12">
+            <form>
+                <fieldset id="au_field">
+                    <h3>RESOURCE LIST BADGE</h3>
+                    <div class="form-group">
+                        <label for="au_id">Author ID <strong>(required)</strong></label>
+                        <input class="form-control col-lg-3 col-md-4 col-7 centered" type="text" id="au_id" autocomplete="false"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="au_brightness">Brightness style</label>
+                        <select class="form-control col-lg-3 col-md-4 col-7" style="float: none; margin: 0 auto;" id="au_brightness">
+                            <option value="rand">Random</option>
+                            <option value="cream">Cream color</option>
+                            <option value="choco">Chocolate color</option>
+                        </select>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-3 col-md-5 col-9">
+                            <div class="form-group">
+                                <label for="au_width">Width</label>
+                                <input class="form-control col-11 centered" type="number" id="au_width"
+                                       onKeyPress="if(this.value.length>=4) return false;"/>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-5 col-9">
+                            <div class="form-group">
+                                <label for="au_size">Banners amount</label>
+                                <input class="form-control col-11 centered" type="number" id="au_size"
+                                       onKeyPress="if(this.value.length>=2) return false;"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="au_color">Background color</label>
+                        <div class="row justify-content-center">
+                            <div id="au_color_div" class="col-lg-2 col-md-3 col-4" hidden>
+                                <input class="form-control centered no-overlay" type="color" id="au_color" hidden>
+                                Select color
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-4">
+                                <input class="form-control centered no-overlay" type="checkbox" checked id="au_random"
+                                       onclick="document.getElementById('au_color').hidden = checked; document.getElementById('au_color_div').hidden = checked">
+                                Randomize
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-4 col-md-5 col-8">
+                            <div class="form-group">
+                                <label for="au_font">Font</label>
+                                <input class="form-control col-11 centered" type="text" id="au_font" list="font"/>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-5 col-8">
+                            <div class="form-group">
+                                <label for="au_subfont">Subfont</label>
+                                <input class="form-control col-11 centered" type="text" id="au_subfont" list="font"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="au_format">Image format</label>
+                        <select class="form-control col-lg-7 col-md-8 col-11 centered centered" id="au_format">
+                            <option value="png">Portable Network Graphics (PNG) (Recommended)</option>
+                            <option value="jpg">Joint Photographic Experts Group (JPEG) (Worse quality)</option>
+                        </select>
+                    </div>
+                    <button type="button" onclick="generateAuthor();">Generate</button>
+                    <button type="button" onclick="copyText('linkau');">Copy</button>
+                    <div class="row">
+                        <div class="col-lg-5 col-md-7 col-12">
+                            <div class="form-group">
+                                <label for="linkau">Output:</label>
+                                <textarea class="form-control" rows="3" id="linkau" disabled></textarea>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-8 col-12">
+                            <label for="au_frame">Image:</label>
+                            <div class="form-group embed-responsive embed-responsive-21by9 white">
+                                <iframe id="au_frame"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+<datalist id="font">
+    <option value="Arial">Arial</option>
+    <option value="Edo">Edo</option>
+    <option value="Action Man">Action Man</option>
+    <option value="Action Man Extended">Action Man Extended</option>
+    <option value="Amadeus">Amadeus</option>
+    <option value="Architects Daughter">Architects Daughter</option>
+    <option value="BloggerSans">BloggerSans</option>
+    <option value="BreeSerif-Regular">BreeSerif-Regular</option>
+    <option value="Comfortaa">Comfortaa</option>
+    <option value="Distant Galaxy">Distant Galaxy</option>
+    <option value="Eraser Regular">Eraser Regular</option>
+    <option value="FORQUE">FORQUE</option>
+    <option value="LobsterTwo">LobsterTwo</option>
+    <option value="Minotaur Phatte">Minotaur Phatte</option>
+    <option value="Permanent Marker">Permanent Marker</option>
+    <option value="Pincoyablack-Black">Pincoyablack-Black</option>
+    <option value="Rock Salt">Rock Salt</option>
+</datalist>
+<script>
+    function generateAuthor() {
+        var target = document.getElementById("linkau");
+        var val = document.getElementById("au_id").value;
+        if (val == null || val == "") {
+            target.value = "Invalid author ID";
+            return;
+        }
+        var baseURL = "https://banners.plajer.xyz/author/" + val + "/banner." + document.getElementById("au_format").value;
+        var hasInited = false;
+        switch (document.getElementById("reso_brightness").value.toString()) {
+            case "cream":
+                baseURL = baseURL + "?bright=true";
+                hasInited = true;
+                break;
+            case "choco":
+                baseURL = baseURL + "?bright=false";
+                hasInited = true;
+                break;
+            case "rand":
+            default:
+                break;
+        }
+        if (document.getElementById("au_width").value.toString() && document.getElementById("au_width").value.toString() > 0) {
+            if (hasInited) {
+                baseURL = baseURL + "&width=" + document.getElementById("au_width").value;
+            } else {
+                baseURL = baseURL + "?width=" + document.getElementById("au_width").value;
+                hasInited = true;
+            }
+        }
+        if (document.getElementById("au_size").value.toString() && document.getElementById("au_size").value.toString() > 0) {
+            if (hasInited) {
+                baseURL = baseURL + "&size=" + document.getElementById("au_size").value;
+            } else {
+                baseURL = baseURL + "?size=" + document.getElementById("au_size").value;
+                hasInited = true;
+            }
+        }
+        if (!document.getElementById("au_random").checked) {
+            if (hasInited) {
+                baseURL = baseURL + "&color=" + document.getElementById("au_color").value.toString().substring(1, 7);
+            } else {
+                baseURL = baseURL + "?color=" + document.getElementById("au_color").value.toString().substring(1, 7);
+                hasInited = true;
+            }
+        }
+        if (document.getElementById("au_font").value.toString()) {
+            if (hasInited) {
+                baseURL = baseURL + "&font=" + document.getElementById("au_font").value;
+            } else {
+                baseURL = baseURL + "?font=" + document.getElementById("au_font").value;
+                hasInited = true;
+            }
+        }
+        if (document.getElementById("au_subfont").value.toString()) {
+            if (hasInited) {
+                baseURL = baseURL + "&subfont=" + document.getElementById("au_subfont").value;
+            } else {
+                baseURL = baseURL + "?subfont=" + document.getElementById("au_subfont").value;
+                hasInited = true;
+            }
+        }
+        target.value = baseURL;
+        document.getElementById("au_frame").src = baseURL;
+    }
+
+    function copyText(e) {
+        e = document.getElementById(e);
+        e.disabled = false;
+        e.select();
+        document.execCommand('copy');
+        e.disabled = true;
+        var old = e.value;
+        e.value = "COPIED!"
+        setTimeout(function () {
+            e.value = old;
+        }, 500);
+    }
+
+    function generateReso() {
+        var target = document.getElementById("linkreso");
+        var val = document.getElementById("reso_id").value;
+        if (val == null || val == "") {
+            target.value = "Invalid Resource ID";
+            return;
+        }
+        var baseURL = "https://banners.plajer.xyz/resource/" + val + "/banner." + document.getElementById("reso_format").value;
+        var hasInited = false;
+        switch (document.getElementById("reso_brightness").value.toString()) {
+            case "cream":
+                baseURL = baseURL + "?bright=true";
+                hasInited = true;
+                break;
+            case "choco":
+                baseURL = baseURL + "?bright=false";
+                hasInited = true;
+                break;
+            case "rand":
+            default:
+                break;
+        }
+        if (document.getElementById("reso_width").value.toString() && document.getElementById("reso_width").value.toString() > 0) {
+            if (hasInited) {
+                baseURL = baseURL + "&width=" + document.getElementById("reso_width").value;
+            } else {
+                baseURL = baseURL + "?width=" + document.getElementById("reso_width").value;
+                hasInited = true;
+            }
+        }
+        if (!document.getElementById("reso_random").checked) {
+            if (hasInited) {
+                baseURL = baseURL + "&color=" + document.getElementById("reso_color").value.toString().substring(1, 7);
+            } else {
+                baseURL = baseURL + "?color=" + document.getElementById("reso_color").value.toString().substring(1, 7);
+                hasInited = true;
+            }
+        }
+        if (document.getElementById("reso_font").value.toString()) {
+            if (hasInited) {
+                baseURL = baseURL + "&font=" + document.getElementById("reso_font").value;
+            } else {
+                baseURL = baseURL + "?font=" + document.getElementById("reso_font").value;
+                hasInited = true;
+            }
+        }
+        if (document.getElementById("reso_subfont").value.toString()) {
+            if (hasInited) {
+                baseURL = baseURL + "&subfont=" + document.getElementById("reso_subfont").value;
+            } else {
+                baseURL = baseURL + "?subfont=" + document.getElementById("reso_subfont").value;
+                hasInited = true;
+            }
+        }
+        target.value = baseURL;
+
+        document.getElementById("reso_frame").src = baseURL;
+    }
+</script>
+</body>
+</html>
