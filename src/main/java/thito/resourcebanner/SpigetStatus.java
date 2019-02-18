@@ -10,10 +10,11 @@ import java.net.URL;
 import org.spookit.betty.HttpField;
 
 public class SpigetStatus {
-  ServerStatus status;
-  ServerStats stats;
 
-  public static SpigetStatus getStatus() {
+  private ServerStatus status;
+  private ServerStats stats;
+
+  public static SpigetStatus getSpigetStatus() {
     try {
       URL url = new URL("https://api.spiget.org/v2/status");
       HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -30,54 +31,46 @@ public class SpigetStatus {
     }
   }
 
-  public static class Document {
-    public int amount;
-    public int suspects;
-    public int index;
-    public int id;
+  public ServerStatus getStatus() {
+    return status;
   }
 
-  public static class Page {
-    public int amount;
-    public int index;
-    public PageItem item;
-  }
-
-  public static class PageItem {
-    public int index;
-    public String state;
+  public ServerStats getStats() {
+    return stats;
   }
 
   public static class ServerStats {
-    public int resources;
-    public int authors;
-    public int categories;
-    public int resource_updates;
-    public int resource_versions;
+    private int resources;
+    private int authors;
+
+    public int getResources() {
+      return resources;
+    }
+
+    public int getAuthors() {
+      return authors;
+    }
   }
 
   public static class ServerStatus {
-    public SpigetServer server;
-    public SpigetFetch fetch;
-    public SpigetExistence existence;
-  }
+    private SpigetServer server;
 
-  public static class SpigetExistence {
-    public long start;
-    public long end;
-    public Document document;
-    public boolean active;
-  }
-
-  public static class SpigetFetch {
-    public long start;
-    public long end;
-    public Page page;
-    public boolean active;
+    public SpigetServer getServer() {
+      return server;
+    }
   }
 
   public static class SpigetServer {
-    public String name;
-    public String mode;
+
+    private String name;
+    private String mode;
+
+    public String getName() {
+      return name;
+    }
+
+    public String getMode() {
+      return mode;
+    }
   }
 }

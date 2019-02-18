@@ -13,6 +13,7 @@ import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
@@ -20,16 +21,13 @@ import javax.swing.JPanel;
 
 public class RoundRectBkg extends JPanel {
 
-  static final FontRenderContext frc = new FontRenderContext(null, true, true);
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
-  Color rate;
-  HashMap<TextLayout, Point> texts = new HashMap<>();
-  HashMap<BufferedImage, Rectangle> image = new HashMap<>();
-  Rectangle r;
-  double av;
+  private static final FontRenderContext frc = new FontRenderContext(null, true, true);
+  private Color rate;
+  private Map<TextLayout, Point> texts = new HashMap<>();
+  private Map<BufferedImage, Rectangle> image = new HashMap<>();
+  private Rectangle rectangle;
+  private double average;
   boolean countBoth = true;
 
   public RoundRectBkg(Boolean bright) {
@@ -90,14 +88,14 @@ public class RoundRectBkg extends JPanel {
       g.drawImage(img.getKey(), img.getValue().x, img.getValue().y, img.getValue().width, img.getValue().height,
           this);
     }
-    if (r != null) {
-      applyResourceRatingStars(g, r, av);
+    if (rectangle != null) {
+      applyResourceRatingStars(g, rectangle, average);
     }
   }
 
   public void setRatings(int x, int y, int w, int h, double average) {
-    r = new Rectangle(x, y, w, h);
-    av = average;
+    rectangle = new Rectangle(x, y, w, h);
+    this.average = average;
   }
 
   private void applyResourceRatingStars(Graphics g, Rectangle bound, double average) {
@@ -132,4 +130,7 @@ public class RoundRectBkg extends JPanel {
     }
   }
 
+  public void setRate(Color rate) {
+    this.rate = rate;
+  }
 }

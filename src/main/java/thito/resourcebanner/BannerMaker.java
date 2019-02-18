@@ -46,34 +46,17 @@ import thito.resourcebanner.utils.Utils;
 
 public class BannerMaker extends WebServer {
 
-  public static final String HELP_THREAD = "https://www.spigotmc.org/threads/resource-banner-generate-your-own-banner.346493/";
-  static final Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
-  static final Set<String> resources = new HashSet<>();
-  static final Set<String> authors = new HashSet<>();
-  static final Properties config = new Properties();
-  static final String defaultFont = "?";
-  static final Thread SAVE;
-  static String[] supportedTypes = {"png", "jpg", "jpeg", "webp"};
-  static int defaultType = 0;
-  static long REQUESTS = 0;
-  static long past = 0;
-  static long performance;
-  static RuntimeMXBean b = ManagementFactory.getRuntimeMXBean();
-  static {
-    SAVE = new Thread(() -> {
-      Gson gson = new Gson();
-      try {
-        config.setProperty("api-requests", REQUESTS + "");
-        config.setProperty("resources-requests", gson.toJson(resources));
-        config.setProperty("authors-requests", gson.toJson(authors));
-        config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.6.7 by BlueObsidian");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    });
-    System.setProperty("http.agent", "");
-  }
+  private static Set<String> cachedResources = new HashSet<>();
+  private static Set<String> cachedAuthors = new HashSet<>();
+  private static Properties config = new Properties();
+  private static Thread configSaveThread;
+  private static RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+  private static long totalRequests = 0;
+  private static long lastConnection = 0;
+  private static long fetchTime;
 
+  private final Gson prettyGsonBuilder = new GsonBuilder().setPrettyPrinting().create();
+  private String[] supportedTypes = {"png", "jpg", "jpeg", "webp"};
   private SpigotResourceHandler spigotResourceHandler = new SpigotResourceHandler();
 
   public BannerMaker(int port) {
@@ -87,7 +70,7 @@ public class BannerMaker extends WebServer {
     }
     if (cmd.startsWith("save")) {
       System.out.println("Saving configuration...");
-      SAVE.run();
+      configSaveThread.run();
       System.out.println("Done!");
       return;
     }
@@ -102,8 +85,8 @@ public class BannerMaker extends WebServer {
   }
 
   public static void done() {
-    performance = System.currentTimeMillis() - past;
-    SAVE.run();
+    fetchTime = System.currentTimeMillis() - lastConnection;
+    configSaveThread.run();
   }
 
   public static File getFile(String name) {
@@ -122,26 +105,24 @@ public class BannerMaker extends WebServer {
     System.out.println("Loading libraries...");
     Class.forName("org.apache.commons.io.IOUtils");
     Class.forName("com.google.gson.Gson");
+    setupConfigThread();
     try {
       File file = getFile("/config.properties");
       if (!file.exists()) {
         IOUtils.copy(getResource("config.properties"), new FileOutputStream(file));
       }
       config.load(new FileReader(getFile("/config.properties")));
-      REQUESTS = Integer.parseInt(config.getProperty("api-requests"));
-      Runtime.getRuntime().addShutdownHook(SAVE);
+      totalRequests = Integer.parseInt(config.getProperty("api-requests"));
+      Runtime.getRuntime().addShutdownHook(configSaveThread);
       Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("Shutting down server...")));
     } catch (Throwable t) {
       System.out.println("Failed to load configuration");
       t.printStackTrace();
-    } finally {
     }
     int port = 8080;
-    if (args.length > 0) {
-      try {
-        port = Integer.parseInt(args[0]);
-      } catch (Throwable t) {
-      }
+    if (args.length > 0 && Utils.isInteger(args[0])) {
+      port = Integer.parseInt(args[0]);
+      System.out.println("Using custom port " + args[0]);
     }
     loadFonts();
     System.out.println("Starting server on port " + port + "...");
@@ -155,21 +136,37 @@ public class BannerMaker extends WebServer {
     scan.close();
   }
 
+  private static void setupConfigThread() {
+    configSaveThread = new Thread(() -> {
+      Gson gson = new Gson();
+      try {
+        config.setProperty("api-requests", totalRequests + "");
+        config.setProperty("resources-requests", gson.toJson(cachedResources));
+        config.setProperty("authors-requests", gson.toJson(cachedAuthors));
+        config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.6.7 by BlueObsidian");
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    });
+    System.setProperty("http.agent", "");
+  }
+
   private static void loadFonts() {
     System.out.println("Loading fonts...");
     File fontDir = getFile("fonts");
     if (!fontDir.exists()) {
       fontDir.mkdirs();
     } else if (fontDir.isDirectory()) {
-      for (File f : fontDir.listFiles()) {
-        if (f.getName().endsWith(".ttf")) {
-          try {
-            String name = SwingUtil.registerFont(f);
-            System.out.println("Font '" + f.getName() + "' has been registered as '" + name + "'");
-          } catch (Throwable t) {
-            System.out.println("Failed to register font '" + f.getName() + "'!");
-            t.printStackTrace();
-          }
+      for (File file : fontDir.listFiles()) {
+        if (!file.getName().endsWith(".ttf")) {
+          continue;
+        }
+        try {
+          String name = SwingUtil.registerFont(file);
+          System.out.println("Font '" + file.getName() + "' has been registered as '" + name + "'");
+        } catch (Throwable t) {
+          System.out.println("Failed to register font '" + file.getName() + "'!");
+          t.printStackTrace();
         }
       }
     }
@@ -180,12 +177,11 @@ public class BannerMaker extends WebServer {
     return img;
   }
 
-  public static RoundRectBkg process(RoundRectBkg img, SpigotResource resource, String headerFont, String fontName,
-                                     Color col) {
+  public static RoundRectBkg process(RoundRectBkg img, SpigotResource resource, String headerFont, String fontName, Color color) {
     resource.getRating().average = roundToHalf(resource.getRating().average);
     img.countBoth = false;
-    if (col != null) {
-      img.rate = col;
+    if (color != null) {
+      img.setRate(color);
     }
     if (fontName == null) {
       fontName = headerFont;
@@ -242,9 +238,9 @@ public class BannerMaker extends WebServer {
     return img;
   }
 
-  public static RoundRectBkg process(RoundRectBkg img, String font, Color c) {
-    if (c != null) {
-      img.rate = c;
+  public static RoundRectBkg process(RoundRectBkg img, String font, Color color) {
+    if (color != null) {
+      img.setRate(color);
     }
     img.addText("And More...", new Font(font, Font.BOLD, 24), 35, 55);
     return img;
@@ -267,13 +263,13 @@ public class BannerMaker extends WebServer {
     freeMem = Math.floor(freeMem * 100) / 100;
     img.addText("Resource Banner Status", new Font(font, Font.BOLD, 13), 15, 20);
     img.addText("Created by BlueObsidian", new Font(subFont, Font.ITALIC, 12), 15, 35);
-    img.addText("Fetch Time: " + performance + " ms", new Font(subFont, 0, 11), 15, 50);
-    img.addText("Uptime: " + time(b.getUptime()), new Font(subFont, 0, 11), 15, 65);
+    img.addText("Fetch Time: " + fetchTime + " ms", new Font(subFont, 0, 11), 15, 50);
+    img.addText("Uptime: " + time(BannerMaker.runtime.getUptime()), new Font(subFont, 0, 11), 15, 65);
     img.addText("Max Memory: " + maxMem + "MB", new Font(subFont, 0, 11), 15, 80);
     img.addText("Total Memory: " + totalMem + "MB", new Font(subFont, 0, 11), 15, 95);
     img.addText("Free Memory: " + freeMem + "MB", new Font(subFont, 0, 11), 15, 110);
     img.addText("Used Memory: " + usedMem + "MB", new Font(subFont, 0, 11), 15, 125);
-    img.addText("API requests: " + REQUESTS, new Font(subFont, 0, 11), 15, 140);
+    img.addText("API requests: " + totalRequests, new Font(subFont, 0, 11), 15, 140);
     return img;
   }
 
@@ -294,19 +290,18 @@ public class BannerMaker extends WebServer {
   }
 
   @Override
-  public void handle(OutputStream out, BufferedReader reader, Socket socket, String[] path, Properties props,
-                     Properties browser) throws Throwable {
+  public void handle(OutputStream out, BufferedReader reader, Socket socket, String[] path, Properties props, Properties browser) throws Throwable {
     /*
      * API handler
      */
     Header header = new Header();
-    REQUESTS++;
-    past = System.currentTimeMillis();
+    totalRequests++;
+    lastConnection = System.currentTimeMillis();
     header.fields.put(HttpField.CacheControl, "private, no-store, no-cache, must-revalidate");
     header.fields.put(HttpField.Pragma, "no-cache");
     header.fields.put(HttpField.Date, new Date());
     header.fields.put(HttpField.Expires, new Date());
-    String fontName = defaultFont;
+    String fontName = "?";
     String subFont = null;
     if (props.containsKey("font")) {
       fontName = props.getProperty("font");
@@ -318,6 +313,7 @@ public class BannerMaker extends WebServer {
     if (props.containsKey("bright")) {
       bright = Boolean.parseBoolean(props.getProperty("bright"));
     }
+    int defaultType = 0;
     String format = supportedTypes[defaultType];
     if (path.length > 0) {
       String[] f = path[path.length - 1].split("\\.", 2);
@@ -344,17 +340,11 @@ public class BannerMaker extends WebServer {
     if (props.containsKey("order")) {
       sortOrder = Sort.SortDirection._valueOf(props.getProperty("order"));
     }
-    if (props.containsKey("width")) {
-      try {
-        width = Integer.parseInt(props.getProperty("width"));
-      } catch (Throwable t) {
-      }
+    if (props.containsKey("width") && Utils.isInteger(props.getProperty("width"))) {
+      width = Integer.parseInt(props.getProperty("width"));
     }
-    if (props.containsKey("truncate")) {
-      try {
-        truncate = Integer.parseInt(props.getProperty("truncate"));
-      } catch (Throwable t) {
-      }
+    if (props.containsKey("truncate") && Utils.isInteger(props.getProperty("truncate"))) {
+      truncate = Integer.parseInt(props.getProperty("truncate"));
     }
     Color defColor = null;
     if (props.containsKey("color")) {
@@ -362,11 +352,8 @@ public class BannerMaker extends WebServer {
     } else if (props.containsKey("nicecolor") && Boolean.getBoolean(props.getProperty("nicecolor"))) {
       defColor = ImageUtil.getNiceColor();
     }
-    if (props.containsKey("size")) {
-      try {
-        sizeLimit = Integer.parseInt(props.getProperty("size"));
-      } catch (Throwable t) {
-      }
+    if (props.containsKey("size") && Utils.isInteger(props.getProperty("size"))) {
+      sizeLimit = Integer.parseInt(props.getProperty("size"));
     }
     // TAK SEMUDAH ITU FERGUSO >:)
     if (sizeLimit > 50) {
@@ -384,14 +371,14 @@ public class BannerMaker extends WebServer {
         if (path[0].equalsIgnoreCase("data")) {
           header.fields.put(HttpField.ContentType, ContentType.ApplicationJSON);
           Map<String, Object> data = new HashMap<>();
-          data.put("resources", resources);
-          data.put("authors", authors);
+          data.put("resources", cachedResources);
+          data.put("authors", cachedAuthors);
           HashSet<String> fonts = new HashSet<>();
           for (Font f : SwingUtil.FONTS) {
             fonts.add(f.getName());
           }
           data.put("fonts", fonts);
-          header.content = prettyGson.toJson(data);
+          header.content = prettyGsonBuilder.toJson(data);
           header.send(out);
           done();
           return;
@@ -456,28 +443,22 @@ public class BannerMaker extends WebServer {
             List<SpigotResource> res = getSpigotResourceHandler().byAuthor(authorID, sizeLimit, sortBy, sortOrder);
             List<RoundRectBkg> imgs = new ArrayList<>();
             if (sizeLimit > 0) {
-              if (res.size() > sizeLimit && sizeLimit > 1) {
-                for (int i = 0; i < sizeLimit - 1; i++) {
-                  imgs.add(
-                      process(new RoundRectBkg(bright), res.get(i), fontName, subFont, defColor));
-                }
-                imgs.add(process(new RoundRectBkg(bright), fontName, defColor));
-              } else if (sizeLimit == 1) {
-                for (SpigotResource r : res) {
-                  imgs.add(process(new RoundRectBkg(bright), r, fontName, subFont, defColor));
+              int resourcesLimit = sizeLimit;
+              if (res.size() < resourcesLimit) {
+                resourcesLimit = res.size();
+              }
+              for (SpigotResource r : res) {
+                if (resourcesLimit == 0) {
                   break;
                 }
-              } else {
-                for (SpigotResource r : res) {
-                  imgs.add(process(new RoundRectBkg(bright), r, fontName, subFont, defColor));
-                }
-
+                imgs.add(process(new RoundRectBkg(bright), r, fontName, subFont, defColor));
+                resourcesLimit--;
               }
             }
             if (imgs.isEmpty()) {
               imgs.add(noResource(new RoundRectBkg(bright), fontName));
             }
-            authors.add(authorID);
+            cachedAuthors.add(authorID);
             JPanel j = SwingUtil.collect(imgs, width);
             header.send(out);
             ImageIO.write(SwingUtil.convert(j), format, out);
@@ -497,16 +478,16 @@ public class BannerMaker extends WebServer {
           return;
         }
         if (path[0].equalsIgnoreCase("spiget")) {
-          SpigetStatus stats = SpigetStatus.getStatus();
+          SpigetStatus stats = SpigetStatus.getSpigetStatus();
           RoundRectBkg img = new RoundRectBkg(bright);
           if (defColor != null) {
-            img.rate = defColor;
+            img.setRate(defColor);
           }
           img.addText("API Status - Spiget", new Font(fontName, Font.BOLD, 13), 15, 20);
-          img.addText("Server Name: " + stats.status.server.name, new Font(subFont, 0, 11), 15, 35);
-          img.addText("Server Mode: " + stats.status.server.mode, new Font(subFont, 0, 11), 15, 50);
-          img.addText("Resources: " + stats.stats.resources, new Font(subFont, 0, 11), 15, 65);
-          img.addText("Authors: " + stats.stats.authors, new Font(subFont, 0, 11), 15, 80);
+          img.addText("Server Name: " + stats.getStatus().getServer().getName(), new Font(subFont, 0, 11), 15, 35);
+          img.addText("Server Mode: " + stats.getStatus().getServer().getMode(), new Font(subFont, 0, 11), 15, 50);
+          img.addText("Resources: " + stats.getStats().getResources(), new Font(subFont, 0, 11), 15, 65);
+          img.addText("Authors: " + stats.getStats().getAuthors(), new Font(subFont, 0, 11), 15, 80);
           if (width > 0) {
             img.setSize(width, img.getHeight());
           }
@@ -527,17 +508,6 @@ public class BannerMaker extends WebServer {
           done();
           return;
         }
-        if (path[0].equalsIgnoreCase("debug")) {
-          if (path.length > 1) {
-            Object throwable = null;
-            try {
-              throwable = Class.forName(path[1]).newInstance();
-            } catch (Throwable t) {
-            }
-            throw (Throwable) throwable;
-          }
-          throw new Error("Debug");
-        }
         if (path[0].equalsIgnoreCase("resource")) {
           if (path.length > 1) {
             String resourceID = path[1];
@@ -554,7 +524,7 @@ public class BannerMaker extends WebServer {
             RoundRectBkg img = new RoundRectBkg(bright);
             if (resource != null) {
               process(img, resource, fontName, subFont, defColor);
-              resources.add(resourceID);
+              cachedResources.add(resourceID);
             } else {
               addBigText(img, "Not Found :/", fontName);
             }
@@ -572,7 +542,7 @@ public class BannerMaker extends WebServer {
       io.printStackTrace();
       RoundRectBkg img = new RoundRectBkg(bright);
       if (defColor != null) {
-        img.rate = defColor;
+        img.setRate(defColor);
       }
       addBigText(img, "Not Found :/", fontName);
       header.send(out);
@@ -583,7 +553,7 @@ public class BannerMaker extends WebServer {
       t.printStackTrace();
       RoundRectBkg img = new RoundRectBkg(bright);
       if (defColor != null) {
-        img.rate = defColor;
+        img.setRate(defColor);
       }
       addBigText(img, t.toString(), fontName);
       header.send(out);
@@ -591,9 +561,13 @@ public class BannerMaker extends WebServer {
       done();
       return;
     }
-    header.content = "<html><head><title>Unknown Route</title></head><body>Redirecting... <br>if it doesn't go to <br>" + HELP_THREAD + "</body><script>window.location = '" + HELP_THREAD + "'</script><html>";
+    header.content = "<html><head><title>Unknown Route</title></head><body>Redirecting... <br>if it doesn't go to <br>"
+        + "https://www.spigotmc.org/threads/resource-banner-generate-your-own-banner.346493/"
+        + "</body><script>window.location = '"
+        + "https://www.spigotmc.org/threads/346493/"
+        + "'</script><html>";
     header.fields.put(HttpField.ContentType, ContentType.TextHTML);
-    header.fields.put(HttpField.Location, HELP_THREAD);
+    header.fields.put(HttpField.Location, "https://www.spigotmc.org/threads/346493/");
     header.send(out);
     done();
   }
