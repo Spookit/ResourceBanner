@@ -23,14 +23,21 @@ public class RectBkg extends JPanel {
 
   private static final long serialVersionUID = 1L;
   private static final FontRenderContext frc = new FontRenderContext(null, true, true);
-  private Color rate;
+  protected Color rate;
   private Map<TextLayout, Point> texts = new HashMap<>();
   private Map<BufferedImage, Rectangle> image = new HashMap<>();
   private boolean rounded = true;
   private Rectangle rectangle;
   private double average;
   private boolean countBoth = true;
-
+  private Color textColor;
+  private HUE hue;
+	private Boolean lightText;
+	public void nextHUE() {
+		if (lightText == null) lightText = getBrightness(rate) <=130;
+		if (hue == null) hue = new HUE(rate);
+		rate = hue.next();
+	}
   public RectBkg(Boolean bright) {
     rate = new Color(
         bright == null ? ImageUtil.random.nextInt(255) : ImageUtil.random.nextInt(130) + (bright ? 125 : 0),
@@ -59,6 +66,11 @@ public class RectBkg extends JPanel {
 
   public void setRounded(boolean rounded) {
     this.rounded = rounded;
+    if (!rounded) {
+    	int height = getHeight()-8;
+    	setBounds(0,0,getWidth(),height);
+    	setSize(getWidth(),height);
+    }
   }
 
   public void addImage(BufferedImage img, int x, int y, int w, int h) {
@@ -91,9 +103,13 @@ public class RectBkg extends JPanel {
     if (rounded) {
       g.fillRoundRect(0, 0, getWidth(), getHeight() - 8, 25, 25);
     } else {
-      g.fillRect(0, 0, getWidth(), getHeight() - 8);
+      g.fillRect(0, 0, getWidth(), getHeight());
     }
-    g.setColor(x(rate));
+    if (hue == null) {
+    	textColor = x(rate);
+    }
+    if (textColor == null) textColor = x(rate); 
+    g.setColor(textColor);
     if (g instanceof Graphics2D) {
       for (Entry<TextLayout, Point> t : texts.entrySet()) {
         t.getKey().draw((Graphics2D) g, (float) t.getValue().getX(), (float) t.getValue().getY());
@@ -104,7 +120,7 @@ public class RectBkg extends JPanel {
           this);
     }
     if (rectangle != null) {
-      applyResourceRatingStars(g, rectangle, average);
+      applyResourceRatingStars(g, new Rectangle(rectangle), average);
     }
   }
 

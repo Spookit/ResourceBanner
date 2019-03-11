@@ -1,11 +1,9 @@
 package thito.resourcebanner;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +38,9 @@ import org.spookit.betty.Header;
 import org.spookit.betty.HttpField;
 import org.spookit.betty.WebServer;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import thito.resourcebanner.handlers.SpigotResourceHandler;
 import thito.resourcebanner.resource.SpigotResource;
 import thito.resourcebanner.utils.Utils;
@@ -54,6 +55,7 @@ public class BannerMaker extends WebServer {
   private static long totalRequests = 0;
   private static long lastConnection = 0;
   private static long fetchTime;
+  private static int GIF_FRAMES = 120;
 
   private final Gson prettyGsonBuilder = new GsonBuilder().setPrettyPrinting().create();
   private String[] supportedTypes = {"png", "jpg", "jpeg", "webp"};
@@ -357,13 +359,20 @@ public class BannerMaker extends WebServer {
     }
     boolean rounded = true;
     if (props.containsKey("type")) {
-      if (props.getProperty("D").equalsIgnoreCase("flat")) {
+      if (props.getProperty("type").equalsIgnoreCase("flat")) {
         rounded = false;
       }
     }
+    boolean rainbow = false;
+	if (props.containsKey("rainbow")) {
+		rainbow = Boolean.parseBoolean(props.getProperty("rainbow"));
+		if (rainbow) {
+			header.fields.put(HttpField.ContentType, ContentType.ImageGIF);
+		}
+	}
     // TAK SEMUDAH ITU FERGUSO >:)
-    if (sizeLimit > 50) {
-      sizeLimit = 50;
+    if (sizeLimit > 120) {
+      sizeLimit = 120;
     }
     //
     try {
@@ -374,6 +383,44 @@ public class BannerMaker extends WebServer {
           done();
           return;
         }
+        if (path[0].equalsIgnoreCase("marquee")) {
+			String text = props.getProperty("text");
+			//int size = sizeLimit;
+			if (!props.containsKey("size")) sizeLimit = 50;
+			int speed = 100;
+			try {
+				speed = Integer.parseInt(props.getProperty("speed"));
+			} catch (Exception e) {
+			}
+			if (text == null) {
+				if (path.length > 1) {
+					text = path[1];
+				} else {
+					text = "You must define the text query before using this. ";
+				}
+			}
+			header.send(out);
+			Marquee mar = new Marquee(text, sizeLimit);
+			GifSequenceWriter writer = new GifSequenceWriter(out, BufferedImage.TYPE_INT_ARGB, speed, true);
+			Color last = defColor;
+			for (int i = 0; i < sizeLimit; i++) {
+				RectBkg img = new RectBkg(bright);
+				if (last == null) {
+					last = img.rate;
+				} else {
+					img.rate = last;
+				}
+				img.addText(mar.next().substring(2), new Font(fontName, Font.BOLD, 13), 0, 20);
+				img.setBounds(0,0,(int)(sizeLimit*5),40);
+				img.setSize((int)(sizeLimit*5),40);
+				writer.writeToSequence(SwingUtil.convert(img,10,10));
+			}
+			writer.close();
+			out.close();
+			done();
+			return;
+		}
+		if (sizeLimit > 50) sizeLimit = 50;
         if (path[0].equalsIgnoreCase("data")) {
           header.fields.put(HttpField.ContentType, ContentType.ApplicationJSON);
           Map<String, Object> data = new HashMap<>();
@@ -432,9 +479,22 @@ public class BannerMaker extends WebServer {
               imgs.add(process(rect, res.get(ImageUtil.random.nextInt(res.size())),
                   fontName, subFont, defColor));
             }
-            JPanel j = SwingUtil.collect(imgs, width);
-            header.send(out);
-            ImageIO.write(SwingUtil.convert(j), format, out);
+            if (rainbow) {
+				header.send(out);
+				GifSequenceWriter writer = new GifSequenceWriter(out, BufferedImage.TYPE_INT_ARGB, 1, true);
+				for (int i = 0; i < GIF_FRAMES;i++) {
+					writer.writeToSequence(SwingUtil.convert(SwingUtil.collect(imgs, width)));
+					imgs.forEach(a->{
+						a.nextHUE();
+					});
+				}
+				writer.close();
+				out.close();
+			} else {
+				JPanel j = SwingUtil.collect(imgs, width);
+				header.send(out);
+				ImageIO.write(SwingUtil.convert(j), format, out);
+			}
             done();
             return;
           }
@@ -469,9 +529,22 @@ public class BannerMaker extends WebServer {
               imgs.add(noResource(new RectBkg(bright), fontName));
             }
             cachedAuthors.add(authorID);
-            JPanel j = SwingUtil.collect(imgs, width);
-            header.send(out);
-            ImageIO.write(SwingUtil.convert(j), format, out);
+            if (rainbow) {
+				header.send(out);
+				GifSequenceWriter writer = new GifSequenceWriter(out, BufferedImage.TYPE_INT_ARGB, 1, true);
+				for (int i = 0; i < GIF_FRAMES;i++) {
+					writer.writeToSequence(SwingUtil.convert(SwingUtil.collect(imgs, width)));
+					imgs.forEach(a->{
+						a.nextHUE();
+					});
+				}
+				writer.close();
+				out.close();
+			} else {
+				JPanel j = SwingUtil.collect(imgs, width);
+				header.send(out);
+				ImageIO.write(SwingUtil.convert(j), format, out);
+			}
             done();
             return;
           }
@@ -490,6 +563,7 @@ public class BannerMaker extends WebServer {
         if (path[0].equalsIgnoreCase("spiget")) {
           SpigetStatus stats = SpigetStatus.getSpigetStatus();
           RectBkg img = new RectBkg(bright);
+          img.setRounded(rounded);
           if (defColor != null) {
             img.setRate(defColor);
           }
@@ -502,7 +576,18 @@ public class BannerMaker extends WebServer {
             img.setSize(width, img.getHeight());
           }
           header.send(out);
-          ImageIO.write(SwingUtil.convert(img), format, out);
+          if (rainbow) {
+				GifSequenceWriter writer = new GifSequenceWriter(out, BufferedImage.TYPE_INT_ARGB, 1, true);
+				int max = HUE.maxHUE(img.rate);
+				for (int i = 0; i < max;i++) {
+					writer.writeToSequence(SwingUtil.convert(img));
+					img.nextHUE();
+				}
+				writer.close();
+				out.close();
+			} else {
+				ImageIO.write(SwingUtil.convert(img), format, out);
+			}
           done();
           return;
         }
@@ -513,8 +598,20 @@ public class BannerMaker extends WebServer {
           if (width > 0) {
             img.setSize(width, img.getHeight());
           }
+          img.setRounded(rounded);
           header.send(out);
-          ImageIO.write(SwingUtil.convert(img), format, out);
+          if (rainbow) {
+				GifSequenceWriter writer = new GifSequenceWriter(out,BufferedImage.TYPE_INT_ARGB, 1, true);
+				int max = HUE.maxHUE(img.rate);
+				for (int i = 0; i < max;i++) {
+					writer.writeToSequence(SwingUtil.convert(img));
+					img.nextHUE();
+				}
+				writer.close();
+				out.close();
+			} else {
+				ImageIO.write(SwingUtil.convert(img), format, out);
+			}
           done();
           return;
         }
@@ -543,7 +640,18 @@ public class BannerMaker extends WebServer {
               img.setSize(width, img.getHeight());
             }
             header.send(out);
-            ImageIO.write(SwingUtil.convert(img), format, out);
+            if (rainbow) {
+				GifSequenceWriter writer = new GifSequenceWriter(out, BufferedImage.TYPE_INT_ARGB, 1, true);
+				int max = HUE.maxHUE(img.rate);
+				for (int i = 0; i < max;i++) {
+					writer.writeToSequence(SwingUtil.convert(img));
+					img.nextHUE();
+				}
+				writer.close();
+				out.close();
+			} else {
+				ImageIO.write(SwingUtil.convert(img), format, out);
+			}
             done();
             return;
           }
