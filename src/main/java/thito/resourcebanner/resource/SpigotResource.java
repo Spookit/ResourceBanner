@@ -4,98 +4,98 @@ import thito.resourcebanner.Author;
 
 public class SpigotResource {
 
-  private int likes;
-  private IDContainer[] versions;
-  private IDContainer[] updates;
-  private IDContainer[] reviews;
-  private String name;
-  private String tag;
-  private IDContainer version;
-  private IDContainer author;
-  private IDContainer category;
-  private ResourceRating rating;
-  private long releaseDate;
-  private int downloads;
-  private boolean premium;
-  private double price;
-  private String currency;
-  private int id;
-  private IconContainer icon;
-  private Author au = null;
+	private Author au = null;
+	private IDContainer author;
+	private IDContainer category;
+	private String currency;
+	private int downloads;
+	private IconContainer icon;
+	private int id;
+	private int likes;
+	private String name;
+	private boolean premium;
+	private double price;
+	private ResourceRating rating;
+	private long releaseDate;
+	private IDContainer[] reviews;
+	private String tag;
+	private IDContainer[] updates;
+	private IDContainer version;
+	private IDContainer[] versions;
 
-  public int getLikes() {
-    return likes;
-  }
+	public Author getAu() {
+		return au;
+	}
 
-  public IDContainer[] getVersions() {
-    return versions;
-  }
+	public Author getAuthor() {
+		return au == null ? au = Author.getAuthor(author.id + "") : au;
+	}
 
-  public IDContainer[] getUpdates() {
-    return updates;
-  }
+	public IDContainer getCategory() {
+		return category;
+	}
 
-  public IDContainer[] getReviews() {
-    return reviews;
-  }
+	public String getCurrency() {
+		return currency;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public int getDownloads() {
+		return downloads;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	public IconContainer getIcon() {
+		return icon;
+	}
 
-  public String getTag() {
-    return tag;
-  }
+	public int getId() {
+		return id;
+	}
 
-  public IDContainer getVersion() {
-    return version;
-  }
+	public int getLikes() {
+		return likes;
+	}
 
-  public IDContainer getCategory() {
-    return category;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public ResourceRating getRating() {
-    return rating;
-  }
+	public double getPrice() {
+		return price;
+	}
 
-  public long getReleaseDate() {
-    return releaseDate;
-  }
+	public ResourceRating getRating() {
+		return rating;
+	}
 
-  public int getDownloads() {
-    return downloads;
-  }
+	public long getReleaseDate() {
+		return releaseDate;
+	}
 
-  public boolean isPremium() {
-    return premium;
-  }
+	public IDContainer[] getReviews() {
+		return reviews;
+	}
 
-  public double getPrice() {
-    return price;
-  }
+	public String getTag() {
+		return tag;
+	}
 
-  public String getCurrency() {
-    return currency;
-  }
+	public IDContainer[] getUpdates() {
+		return updates;
+	}
 
-  public int getId() {
-    return id;
-  }
+	public IDContainer getVersion() {
+		return version;
+	}
 
-  public IconContainer getIcon() {
-    return icon;
-  }
+	public IDContainer[] getVersions() {
+		return versions;
+	}
 
-  public Author getAu() {
-    return au;
-  }
+	public boolean isPremium() {
+		return premium;
+	}
 
-  public Author getAuthor() {
-    return au == null ? au = Author.getAuthor(author.id + "") : au;
-  }
+	public void setName(String name) {
+		this.name = name;
+	}
 }

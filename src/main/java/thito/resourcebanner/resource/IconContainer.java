@@ -10,19 +10,19 @@ import javax.imageio.ImageIO;
 
 public class IconContainer {
 
-  public String data;
+	public String data;
 
-  public BufferedImage getResourceIcon() {
-    try {
-      if (data == null) {
-        return null;
-      }
-      Decoder decoder = Base64.getDecoder();
-      byte[] x = decoder.decode(data.getBytes(StandardCharsets.UTF_8));
-      return ImageIO.read(new ByteArrayInputStream(x));
-    } catch (Throwable e) {
-      return null;
-    }
-  }
+	public BufferedImage getResourceIcon() {
+		try {
+			if (data == null) {
+				return null;
+			}
+			final Decoder decoder = Base64.getDecoder();
+			final byte[] x = decoder.decode(data.getBytes(StandardCharsets.UTF_8));
+			return ImageIO.read(new ByteArrayInputStream(x));
+		} catch (final Throwable e) {
+			return null;
+		}
+	}
 
 }

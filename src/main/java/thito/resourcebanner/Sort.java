@@ -1,41 +1,42 @@
 package thito.resourcebanner;
 
 public class Sort {
-  public static String toString(SortType type, SortDirection dir) {
-    return (dir == null ? SortDirection.DEFAULT.a : dir.a)
-        + (type == null ? SortType.DEFAULT.name().toLowerCase() : type.name().toLowerCase());
-  }
+	public enum SortDirection {
+		ASCEND("+"), DESCEND("-");
+		public static SortDirection DEFAULT = ASCEND;
 
-  public enum SortDirection {
-    ASCEND("+"), DESCEND("-");
-    public static SortDirection DEFAULT = ASCEND;
-    String a;
+		public static SortDirection _valueOf(String s) {
+			for (final SortDirection t : values()) {
+				if (t.name().equalsIgnoreCase(s)) {
+					return t;
+				}
+			}
+			return DEFAULT;
+		}
 
-    SortDirection(String c) {
-      a = c;
-    }
+		String a;
 
-    public static SortDirection _valueOf(String s) {
-      for (SortDirection t : values()) {
-        if (t.name().equalsIgnoreCase(s)) {
-          return t;
-        }
-      }
-      return DEFAULT;
-    }
-  }
+		SortDirection(String c) {
+			a = c;
+		}
+	}
 
-  public enum SortType {
-    rating, downloads, name, premium, likes, id, category, releaseDate, updateDate;
-    public static SortType DEFAULT = downloads;
+	public enum SortType {
+		category, downloads, id, likes, name, premium, rating, releaseDate, updateDate;
+		public static SortType DEFAULT = downloads;
 
-    public static SortType _valueOf(String s) {
-      for (SortType t : values()) {
-        if (t.name().equalsIgnoreCase(s)) {
-          return t;
-        }
-      }
-      return DEFAULT;
-    }
-  }
+		public static SortType _valueOf(String s) {
+			for (final SortType t : values()) {
+				if (t.name().equalsIgnoreCase(s)) {
+					return t;
+				}
+			}
+			return DEFAULT;
+		}
+	}
+
+	public static String toString(SortType type, SortDirection dir) {
+		return (dir == null ? SortDirection.DEFAULT.a : dir.a)
+				+ (type == null ? SortType.DEFAULT.name().toLowerCase() : type.name().toLowerCase());
+	}
 }

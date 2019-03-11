@@ -1,7 +1,5 @@
 package thito.resourcebanner;
 
-import com.google.gson.Gson;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -9,68 +7,71 @@ import java.net.URL;
 
 import org.spookit.betty.HttpField;
 
+import com.google.gson.Gson;
+
 public class SpigetStatus {
 
-  private ServerStatus status;
-  private ServerStats stats;
+	public static class ServerStats {
+		private int authors;
+		private int resources;
 
-  public static SpigetStatus getSpigetStatus() {
-    try {
-      URL url = new URL("https://api.spiget.org/v2/status");
-      HttpURLConnection con = (HttpURLConnection) url.openConnection();
-      con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
-      BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
-      String l;
-      StringBuilder builder = new StringBuilder();
-      while ((l = r.readLine()) != null) {
-        builder.append(l);
-      }
-      return new Gson().fromJson(builder.toString(), SpigetStatus.class);
-    } catch (Throwable t) {
-      throw new RuntimeException(t);
-    }
-  }
+		public int getAuthors() {
+			return authors;
+		}
 
-  public ServerStatus getStatus() {
-    return status;
-  }
+		public int getResources() {
+			return resources;
+		}
+	}
 
-  public ServerStats getStats() {
-    return stats;
-  }
+	public static class ServerStatus {
+		private SpigetServer server;
 
-  public static class ServerStats {
-    private int resources;
-    private int authors;
+		public SpigetServer getServer() {
+			return server;
+		}
+	}
 
-    public int getResources() {
-      return resources;
-    }
+	public static class SpigetServer {
 
-    public int getAuthors() {
-      return authors;
-    }
-  }
+		private String mode;
+		private String name;
 
-  public static class ServerStatus {
-    private SpigetServer server;
+		public String getMode() {
+			return mode;
+		}
 
-    public SpigetServer getServer() {
-      return server;
-    }
-  }
+		public String getName() {
+			return name;
+		}
+	}
 
-  public static class SpigetServer {
+	public static SpigetStatus getSpigetStatus() {
+		try {
+			final URL url = new URL("https://api.spiget.org/v2/status");
+			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
+			final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String l;
+			final StringBuilder builder = new StringBuilder();
+			while ((l = r.readLine()) != null) {
+				builder.append(l);
+			}
+			return new Gson().fromJson(builder.toString(), SpigetStatus.class);
+		} catch (final Throwable t) {
+			throw new RuntimeException(t);
+		}
+	}
 
-    private String name;
-    private String mode;
+	private ServerStats stats;
 
-    public String getName() {
-      return name;
-    }
+	private ServerStatus status;
 
-    public String getMode() {
-      return mode;
-    }
-  }
+	public ServerStats getStats() {
+		return stats;
+	}
+
+	public ServerStatus getStatus() {
+		return status;
+	}
 }
