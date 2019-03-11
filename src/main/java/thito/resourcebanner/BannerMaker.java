@@ -421,6 +421,7 @@ public class BannerMaker extends WebServer {
 					Color last = defColor;
 					for (int i = 0; i < sizeLimit; i++) {
 						final RectBkg img = new RectBkg(bright);
+						img.setRounded(rounded);
 						if (last == null) {
 							last = img.rate;
 						} else {
