@@ -1,6 +1,7 @@
-package org.spookit.betty;
+package thito.resourcebanner.server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
@@ -98,11 +99,15 @@ public abstract class WebServer {
 							} else {
 								handle(out, in, sock, paths, props, bro);
 							}
-							sock.close();
 						} catch (final Throwable t) {
 							if (log) {
 								t.printStackTrace();
 							}
+						}
+						try {
+							if (!sock.isClosed()) sock.close();
+						} catch (IOException e) {
+							throw new RuntimeException(e);
 						}
 					}).start();
 				} catch (final Throwable t) {

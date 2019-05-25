@@ -1,4 +1,4 @@
-package org.spookit.betty;
+package thito.resourcebanner.server;
 
 public enum ContentType {
 	ApplicationGraphQL("application/graphql"), ApplicationJavaScript("application/javascript"), ApplicationJSON(

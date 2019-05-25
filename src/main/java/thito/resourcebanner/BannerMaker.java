@@ -33,16 +33,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.apache.commons.io.IOUtils;
-import org.spookit.betty.ContentType;
-import org.spookit.betty.Header;
-import org.spookit.betty.HttpField;
-import org.spookit.betty.WebServer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import thito.resourcebanner.handlers.SpigotResourceHandler;
 import thito.resourcebanner.resource.SpigotResource;
+import thito.resourcebanner.server.ContentType;
+import thito.resourcebanner.server.Header;
+import thito.resourcebanner.server.HttpField;
+import thito.resourcebanner.server.WebServer;
 import thito.resourcebanner.utils.Utils;
 
 public class BannerMaker extends WebServer {
@@ -419,7 +419,7 @@ public class BannerMaker extends WebServer {
 					final GifSequenceWriter writer = new GifSequenceWriter(out, BufferedImage.TYPE_INT_ARGB, speed,
 							true);
 					Color last = defColor;
-					for (int i = 0; i < sizeLimit; i++) {
+					for (int i = 0; i < text.length(); i++) {
 						final RectBkg img = new RectBkg(bright);
 						img.setRounded(rounded);
 						if (last == null) {
@@ -688,7 +688,6 @@ public class BannerMaker extends WebServer {
 				}
 			}
 		} catch (final RuntimeException io) {
-			io.printStackTrace();
 			final RectBkg img = new RectBkg(bright);
 			if (defColor != null) {
 				img.setRate(defColor);
@@ -697,7 +696,7 @@ public class BannerMaker extends WebServer {
 			header.send(out);
 			ImageIO.write(SwingUtil.convert(img), format, out);
 			done();
-			return;
+			throw io;
 		} catch (final Throwable t) {
 			t.printStackTrace();
 			final RectBkg img = new RectBkg(bright);
@@ -708,7 +707,7 @@ public class BannerMaker extends WebServer {
 			header.send(out);
 			ImageIO.write(SwingUtil.convert(img), format, out);
 			done();
-			return;
+			throw new RuntimeException(t);
 		}
 		header.content = "<html><head><title>Unknown Route</title></head><body>Redirecting... <br>if it doesn't go to <br>"
 				+ "https://www.spigotmc.org/threads/resource-banner-generate-your-own-banner.346493/"

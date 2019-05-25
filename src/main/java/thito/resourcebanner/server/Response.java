@@ -1,4 +1,4 @@
-package org.spookit.betty;
+package thito.resourcebanner.server;
 
 public enum Response {
 	ACCEPTED(202, "Accepted"), ALREADY_REPORTED(208, "Already Reported (WebDAV; RFC 5842)"), BAD_GATEWAY(502,

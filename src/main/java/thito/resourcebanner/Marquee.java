@@ -56,13 +56,6 @@ public class Marquee {
 		}, 1L, 1L);
 	}
 
-	public static void main0(String[] args) {
-		final Marquee mar = new Marquee("i want &asomething &rjust like this".replace('&', COLOR_CHAR), 50);
-		for (final Char c : mar.chars) {
-			System.out.println(mar.next());
-		}
-	}
-
 	private final Char[] chars;
 	private Char lastColor = new Char('r', ' ');
 	private int offset = 0;

@@ -7,12 +7,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.spookit.betty.HttpField;
-
 import com.google.gson.Gson;
 
 import thito.resourcebanner.Sort;
 import thito.resourcebanner.resource.SpigotResource;
+import thito.resourcebanner.server.HttpField;
 
 /**
  * @author Plajer

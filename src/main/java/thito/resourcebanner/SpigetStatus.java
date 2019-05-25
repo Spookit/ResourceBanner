@@ -5,9 +5,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import org.spookit.betty.HttpField;
-
 import com.google.gson.Gson;
+
+import thito.resourcebanner.server.HttpField;
 
 public class SpigetStatus {
 

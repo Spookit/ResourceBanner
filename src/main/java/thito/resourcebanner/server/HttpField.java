@@ -1,4 +1,4 @@
-package org.spookit.betty;
+package thito.resourcebanner.server;
 
 public enum HttpField {
 	Accept("Accept"), AcceptCharset("Accept-Charset"), AcceptEncoding("Accept-Encoding"), AcceptLanguage(

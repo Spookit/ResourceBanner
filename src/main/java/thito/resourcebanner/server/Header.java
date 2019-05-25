@@ -1,4 +1,4 @@
-package org.spookit.betty;
+package thito.resourcebanner.server;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
