@@ -2,35 +2,19 @@ package thito.resourcebanner;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.apache.commons.io.IOUtils;
 
@@ -39,24 +23,30 @@ import com.google.gson.GsonBuilder;
 
 import thito.resourcebanner.handlers.SpigotResourceHandler;
 import thito.resourcebanner.resource.SpigotResource;
-import thito.resourcebanner.server.ContentType;
-import thito.resourcebanner.server.Header;
-import thito.resourcebanner.server.HttpField;
-import thito.resourcebanner.server.WebServer;
 import thito.resourcebanner.utils.Utils;
 
-public class BannerMaker extends WebServer {
+public class BannerMaker /*extends WebServer*/ {
 
 	private static Set<String> cachedAuthors = new HashSet<>();
 	private static Set<String> cachedResources = new HashSet<>();
 	private static Properties config = new Properties();
 	private static Thread configSaveThread;
 	private static long fetchTime;
-	private static int GIF_FRAMES = 120;
+	public static int GIF_FRAMES = 120;
 	private static long lastConnection = 0;
 	private static RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
 	private static long totalRequests = 0;
 
+	public static void increaseTotalRequests() {
+		totalRequests++;
+	}
+	public static Set<String> getCachedAuthors() {
+		return cachedAuthors;
+	}
+	public static Set<String> getCachedResources() {
+		return cachedResources;
+	}
+	
 	public static void dispatchCommand(String cmd) {
 		if (cmd.startsWith("exit")) {
 			System.exit(0);
@@ -130,6 +120,14 @@ public class BannerMaker extends WebServer {
 			totalRequests = Integer.parseInt(config.getProperty("api-requests"));
 			Runtime.getRuntime().addShutdownHook(configSaveThread);
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("Shutting down server...")));
+			Thread main = Thread.currentThread();
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				try {
+					main.join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}));
 		} catch (final Throwable t) {
 			System.out.println("Failed to load configuration");
 			t.printStackTrace();
@@ -141,7 +139,14 @@ public class BannerMaker extends WebServer {
 		}
 		loadFonts();
 		System.out.println("Starting server on port " + port + "...");
-		new BannerMaker(port).disableLogging().start();
+//		new BannerMaker(port).disableLogging().start();
+		BannerMakerServer server = new BannerMakerServer(port);
+		/*
+		 * Disable errors on console
+		 */
+		server.setUncaughtExceptionHandler((a,b)->b.printStackTrace());
+		
+		server.startAsynchronously();
 		System.out.println("Server has been started");
 		final Scanner scan = new Scanner(System.in);
 		while (Thread.currentThread().isAlive()) {
@@ -191,7 +196,6 @@ public class BannerMaker extends WebServer {
 				img.addText(resource.getDownloads() + " Downloads", new Font(fontName, 0, 11), 30, 70);
 			}
 		} else {
-
 			img.addImage(resource.getIcon().getResourceIcon(), 15, 15, 60, 60);
 			if (resource.isPremium()) {
 				img.addText(resource.getName(), new Font(headerFont, Font.BOLD, 13), 90, 20);
@@ -286,30 +290,32 @@ public class BannerMaker extends WebServer {
 		return b;
 	}
 
-	private final Gson prettyGsonBuilder = new GsonBuilder().setPrettyPrinting().create();
+	private static final Gson prettyGsonBuilder = new GsonBuilder().setPrettyPrinting().create();
 
-	private final SpigotResourceHandler spigotResourceHandler = new SpigotResourceHandler();
+	private static final SpigotResourceHandler spigotResourceHandler = new SpigotResourceHandler();
 
-	private final String[] supportedTypes = { "png", "jpg", "jpeg", "webp" };
+//	private final String[] supportedTypes = { "png", "jpg", "jpeg", "webp" };
 
-	public BannerMaker(int port) {
-		super(port);
+	public BannerMaker() {
+	}
+	
+	public static Gson getGson() {
+		return prettyGsonBuilder;
 	}
 
-	private void addBigText(RectBkg img, String text, String font) {
+	public static void addBigText(RectBkg img, String text, String font) {
 		img.addText(text, new Font(font, Font.BOLD, 24), 25, 55);
 	}
 
-	public SpigotResourceHandler getSpigotResourceHandler() {
+	public static SpigotResourceHandler getSpigotResourceHandler() {
 		return spigotResourceHandler;
 	}
-
-	@Override
+	public static void setLastConnection(long con) {
+		lastConnection = con;
+	}
+	/*@Override
 	public void handle(OutputStream out, BufferedReader reader, Socket socket, String[] path, Properties props,
 			Properties browser) throws Throwable {
-		/*
-		 * API handler
-		 */
 		final Header header = new Header();
 		totalRequests++;
 		lastConnection = System.currentTimeMillis();
@@ -344,7 +350,6 @@ public class BannerMaker extends WebServer {
 		header.fields.put(HttpField.ContentType, "image/" + format);
 		/*
 		 * Global queries
-		 */
 		int width = -1;
 		int sizeLimit = 6;
 		Sort.SortType sortBy = null;
@@ -718,5 +723,5 @@ public class BannerMaker extends WebServer {
 		header.send(out);
 		done();
 	}
-
+*/
 }

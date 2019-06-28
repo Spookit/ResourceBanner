@@ -11,7 +11,7 @@ import com.google.gson.Gson;
 
 import thito.resourcebanner.Sort;
 import thito.resourcebanner.resource.SpigotResource;
-import thito.resourcebanner.server.HttpField;
+import thito.septo.io.HttpField;
 
 /**
  * @author Plajer
@@ -26,7 +26,7 @@ public class SpigotResourceHandler {
 			final URL url = new URL("https://api.spiget.org/v2/authors/" + id + "/resources?fields=id&size=" + limit
 					+ "&sort=" + Sort.toString(type, order));
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
+			con.addRequestProperty(HttpField.USER_AGENT.toString(), "ResourceBanner");
 			final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
 			final StringBuilder builder = new StringBuilder();
@@ -51,7 +51,7 @@ public class SpigotResourceHandler {
 			final URL url = new URL("https://api.spiget.org/v2/resources/" + id
 					+ "?fields=name,rating,downloads,icon,author,premium,currency,price");
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
+			con.addRequestProperty(HttpField.USER_AGENT.toString(), "ResourceBanner");
 			final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
 			final StringBuilder builder = new StringBuilder();

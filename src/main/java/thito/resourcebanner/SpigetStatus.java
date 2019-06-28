@@ -7,7 +7,7 @@ import java.net.URL;
 
 import com.google.gson.Gson;
 
-import thito.resourcebanner.server.HttpField;
+import thito.septo.io.HttpField;
 
 public class SpigetStatus {
 
@@ -50,7 +50,7 @@ public class SpigetStatus {
 		try {
 			final URL url = new URL("https://api.spiget.org/v2/status");
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.addRequestProperty(HttpField.UserAgent.toString(), "ResourceBanner");
+			con.addRequestProperty(HttpField.USER_AGENT.toString(), "ResourceBanner");
 			final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String l;
 			final StringBuilder builder = new StringBuilder();
