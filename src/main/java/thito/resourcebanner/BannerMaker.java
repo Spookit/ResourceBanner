@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Scanner;
@@ -76,7 +77,13 @@ public class BannerMaker /*extends WebServer*/ {
 	public static File getFile(String name) {
 		return new File(new File("./").getAbsolutePath(), name);
 	}
-
+	public static URL getResourceURL(String name) {
+		final URL x = BannerMaker.class.getResource(name);
+		if (x != null) {
+			return x;
+		}
+		return BannerMaker.class.getClassLoader().getResource(name);
+	}
 	public static InputStream getResource(String name) {
 		final InputStream x = BannerMaker.class.getResourceAsStream(name);
 		if (x != null) {
@@ -87,47 +94,83 @@ public class BannerMaker /*extends WebServer*/ {
 
 	private static void loadFonts() {
 		System.out.println("Loading fonts...");
-		final File fontDir = getFile("fonts");
+		final File fontDir = getFile("/fonts");
 		if (!fontDir.exists()) {
 			fontDir.mkdirs();
-		} else if (fontDir.isDirectory()) {
-			for (final File file : fontDir.listFiles()) {
-				if (!file.getName().endsWith(".ttf")) {
-					continue;
-				}
-				try {
-					final String name = SwingUtil.registerFont(file);
-					System.out.println("Font '" + file.getName() + "' has been registered as '" + name + "'");
-				} catch (final Throwable t) {
-					System.out.println("Failed to register font '" + file.getName() + "'!");
-					t.printStackTrace();
-				}
+//			for (File s : getResourceFolderFiles("fonts")) {
+//				System.out.println("Extracting font '"+s+"'...");
+//				File f = new File(fontDir,s.getName());
+//				try (
+//						FileOutputStream fos = new FileOutputStream(f);
+//						InputStream input = getResource("fonts/"+s.getName())
+//						) {
+//					IOUtils.copy(input, fos);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//				
+		} 
+		File[] list = fontDir.listFiles();
+		if (list == null) return;
+		for (final File file : fontDir.listFiles()) {
+			if (!file.getName().endsWith(".ttf")) {
+				continue;
+			}
+			try {
+				final String name = SwingUtil.registerFont(file);
+				System.out.println("Font '" + file.getName() + "' has been registered as '" + name + "'");
+			} catch (final Throwable t) {
+				System.out.println("Failed to register font '" + file.getName() + "'!");
+				t.printStackTrace();
 			}
 		}
 	}
 
+	public static void checkLibrary(String name,String baseClass) {
+		try {
+			Class.forName(baseClass);
+		} catch (Throwable t) {
+			System.out.println("Library is missing '"+name+"'");
+			System.exit(1);
+		}
+	}
 	public static void main(String[] args) throws Throwable {
 		System.out.println("Loading libraries...");
-		Class.forName("org.apache.commons.io.IOUtils");
-		Class.forName("com.google.gson.Gson");
+		/*
+		Not used.
+		LibraryLoader loader = new LibraryLoader(new File("./libraries"));
+		loader.loadAll();
+		*/
+		checkLibrary("Apache Commons IO","org.apache.commons.io.IOUtils");
+		checkLibrary("Gson","com.google.gson.Gson");
+		checkLibrary("Septo.io","thito.septo.io.Server");
 		setupConfigThread();
 		try {
 			final File file = getFile("/config.properties");
 			if (!file.exists()) {
-				IOUtils.copy(getResource("config.properties"), new FileOutputStream(file));
+				try (FileOutputStream fos = new FileOutputStream(file)) {
+					IOUtils.copy(getResource("config.properties"), fos);
+					fos.flush();
+				}
 			}
-			config.load(new FileReader(getFile("/config.properties")));
-			totalRequests = Integer.parseInt(config.getProperty("api-requests"));
+			try (FileReader fr = new FileReader(getFile("/config.properties"))){
+				config.load(fr);
+			}
+			totalRequests = Integer.parseInt(config.getProperty("api-requests","0"));
 			Runtime.getRuntime().addShutdownHook(configSaveThread);
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("Shutting down server...")));
-			Thread main = Thread.currentThread();
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				try {
-					main.join();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}));
+//			Thread main = Thread.currentThread();
+			/*
+			 * this one lock the thread and prevent the app being stopped
+			 */
+//			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//				try {
+//					main.join();
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}));
 		} catch (final Throwable t) {
 			System.out.println("Failed to load configuration");
 			t.printStackTrace();
@@ -139,6 +182,9 @@ public class BannerMaker /*extends WebServer*/ {
 		}
 		loadFonts();
 		System.out.println("Starting server on port " + port + "...");
+		/*
+		 * Good bye old WebServer
+		 */
 //		new BannerMaker(port).disableLogging().start();
 		BannerMakerServer server = new BannerMakerServer(port);
 		/*
@@ -239,11 +285,11 @@ public class BannerMaker /*extends WebServer*/ {
 	private static void setupConfigThread() {
 		configSaveThread = new Thread(() -> {
 			final Gson gson = new Gson();
-			try {
+			try (FileWriter fw = new FileWriter(getFile("/config.properties"))) {
 				config.setProperty("api-requests", totalRequests + "");
 				config.setProperty("resources-requests", gson.toJson(cachedResources));
 				config.setProperty("authors-requests", gson.toJson(cachedAuthors));
-				config.store(new FileWriter(getFile("/config.properties")), "Resource Banner v1.6.7 by BlueObsidian");
+				config.store(fw, "Resource Banner v1.6.7 by BlueObsidian");
 			} catch (final IOException e) {
 				e.printStackTrace();
 			}

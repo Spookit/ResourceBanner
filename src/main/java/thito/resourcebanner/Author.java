@@ -1,6 +1,7 @@
 package thito.resourcebanner;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -15,14 +16,19 @@ public class Author {
 			final URL url = new URL("https://api.spiget.org/v2/authors/" + id + "?fields=name");
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.addRequestProperty(HttpField.USER_AGENT.toString(), "ResourceBanner");
-			final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			String l;
-			final StringBuilder builder = new StringBuilder();
-			while ((l = r.readLine()) != null) {
-				builder.append(l);
+			try (final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+				String l;
+				final StringBuilder builder = new StringBuilder();
+				while ((l = r.readLine()) != null) {
+					builder.append(l);
+				}
+				con.disconnect();
+				return new Gson().fromJson(builder.toString(), Author.class);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			return new Gson().fromJson(builder.toString(), Author.class);
-		} catch (final Throwable t) {
+			con.disconnect();
+		} catch (IOException t) {
 			t.printStackTrace();
 		}
 		return null;

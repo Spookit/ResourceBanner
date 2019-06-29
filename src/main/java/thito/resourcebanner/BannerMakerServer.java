@@ -105,9 +105,15 @@ public class BannerMakerServer extends Server implements ClientListener {
 			rainbow = Boolean.parseBoolean(query.getProperty("rainbow"));
 			if (rainbow) response.setRequestProperty(HttpField.CONTENT_TYPE, ContentType.IMAGE_GIF);
 		}
+		/*
+		 * Beginning of life
+		 * handling client request
+		 */
 		if (paths.is("favicon.ico")) {
 			client.send(response);
-			client.send(getResource("icon.ico"));
+			try (InputStream in = getResource("icon.ico")) {
+				client.send(in);
+			}
 			BannerMaker.done();
 			return;
 		}
@@ -284,7 +290,9 @@ public class BannerMakerServer extends Server implements ClientListener {
 			if (format.startsWith(".")) format = format.substring(1);
 			response.setRequestProperty(HttpField.CONTENT_TYPE, format);
 			client.send(response);
-			client.send(new FileInputStream(meme));
+			try (FileInputStream fis = new FileInputStream(meme)) {
+				client.send(fis);
+			}
 			BannerMaker.done();
 			return;
 		}

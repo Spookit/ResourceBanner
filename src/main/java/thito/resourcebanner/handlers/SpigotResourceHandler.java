@@ -27,20 +27,22 @@ public class SpigotResourceHandler {
 					+ "&sort=" + Sort.toString(type, order));
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.addRequestProperty(HttpField.USER_AGENT.toString(), "ResourceBanner");
-			final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			String l;
-			final StringBuilder builder = new StringBuilder();
-			while ((l = r.readLine()) != null) {
-				builder.append(l);
-			}
-			final List<SpigotResource> res = new ArrayList<>();
-			for (SpigotResource rx : new Gson().fromJson(builder.toString(), SpigotResource[].class)) {
-				rx = getResource(rx.getId() + "");
-				if (rx != null) {
-					res.add(rx);
+			try (final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+				String l;
+				final StringBuilder builder = new StringBuilder();
+				while ((l = r.readLine()) != null) {
+					builder.append(l);
 				}
+				con.disconnect();
+				final List<SpigotResource> res = new ArrayList<>();
+				for (SpigotResource rx : new Gson().fromJson(builder.toString(), SpigotResource[].class)) {
+					rx = getResource(rx.getId() + "");
+					if (rx != null) {
+						res.add(rx);
+					}
+				}
+				return res;
 			}
-			return res;
 		} catch (final Throwable t) {
 			return new ArrayList<>();
 		}
@@ -52,13 +54,15 @@ public class SpigotResourceHandler {
 					+ "?fields=name,rating,downloads,icon,author,premium,currency,price");
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.addRequestProperty(HttpField.USER_AGENT.toString(), "ResourceBanner");
-			final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			String l;
-			final StringBuilder builder = new StringBuilder();
-			while ((l = r.readLine()) != null) {
-				builder.append(l);
+			try (final BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+				String l;
+				final StringBuilder builder = new StringBuilder();
+				while ((l = r.readLine()) != null) {
+					builder.append(l);
+				}
+				con.disconnect();
+				return new Gson().fromJson(builder.toString(), SpigotResource.class);
 			}
-			return new Gson().fromJson(builder.toString(), SpigotResource.class);
 		} catch (final Throwable t) {
 
 		}
